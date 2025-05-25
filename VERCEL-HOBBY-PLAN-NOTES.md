@@ -23,23 +23,18 @@ Updated cron schedules to run once daily:
 {
   "crons": [
     {
-      "path": "/api/cron/process-scheduled-messages",
-      "schedule": "0 8 * * *",
-      "headers": {
-        "Content-Type": "application/json",
-        "Authorization": "Bearer ${CRON_SECRET_KEY}"
-      }
+      "path": "/api/cron/process-scheduled-messages?token=${CRON_SECRET_KEY}",
+      "schedule": "0 8 * * *"
     },
     {
-      "path": "/api/cron/process-birthday-messages",
-      "schedule": "0 9 * * *",
-      "headers": {
-        "Authorization": "Bearer ${CRON_SECRET_KEY}"
-      }
+      "path": "/api/cron/process-birthday-messages?token=${CRON_SECRET_KEY}",
+      "schedule": "0 9 * * *"
     }
   ]
 }
 ```
+
+**Note**: Vercel cron jobs don't support custom headers, so authentication is handled via query parameters.
 
 ### `cron.json`
 ```json
@@ -72,6 +67,11 @@ Updated cron schedules to run once daily:
 - Modified query to look for messages scheduled in the last 24 hours
 - Increased batch size for daily processing
 - Added better logging for daily processing windows
+
+### Authentication Updates
+- Updated cron endpoints to support both header-based and query parameter authentication
+- Vercel cron jobs use query parameters since custom headers are not supported
+- Manual triggers still use Authorization headers for security
 
 ### Updated Documentation
 - `SCHEDULER-README.md`

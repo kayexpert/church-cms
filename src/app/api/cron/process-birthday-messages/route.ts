@@ -21,16 +21,21 @@ export async function POST(request: NextRequest) {
     console.log('Process birthday messages endpoint called');
 
     // Verify the request is authorized
+    // For Vercel cron jobs, check for authorization header first, then fall back to query parameter
+    let token = '';
+
     const authHeader = request.headers.get('authorization');
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      console.error('Unauthorized access attempt to process-birthday-messages');
-      return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      token = authHeader.substring(7); // Remove 'Bearer ' prefix
+    } else {
+      // Fall back to query parameter for Vercel cron jobs
+      const url = new URL(request.url);
+      token = url.searchParams.get('token') || '';
     }
 
-    const token = authHeader.substring(7); // Remove 'Bearer ' prefix
-    if (token !== process.env.CRON_SECRET_KEY) {
-      console.error('Invalid token for process-birthday-messages');
-      return NextResponse.json({ success: false, error: 'Invalid token' }, { status: 401 });
+    if (!token || token !== process.env.CRON_SECRET_KEY) {
+      console.error('Invalid or missing token for process-birthday-messages');
+      return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
     }
 
     // Get current date
