@@ -6,10 +6,16 @@
 import { createClient } from '@supabase/supabase-js';
 
 // Create a Supabase client with service role for more permissions
-const getSupabaseAdmin = () => createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL || '',
-  process.env.SUPABASE_SERVICE_ROLE_KEY || ''
-);
+const getSupabaseAdmin = () => {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
+  const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
+
+  if (!supabaseUrl || !supabaseServiceKey) {
+    throw new Error('Missing Supabase configuration for message deduplication');
+  }
+
+  return createClient(supabaseUrl, supabaseServiceKey);
+};
 
 /**
  * Check if a birthday message has already been sent to a member on a specific date
@@ -25,7 +31,7 @@ export async function hasBirthdayMessageBeenSent(
 ): Promise<boolean> {
   try {
     const supabaseAdmin = getSupabaseAdmin();
-    
+
     // Check if there's a log entry for this message, recipient, and date
     const { data, error, count } = await supabaseAdmin
       .from('message_logs')
@@ -35,13 +41,13 @@ export async function hasBirthdayMessageBeenSent(
       .eq('message_type', 'birthday')
       .gte('sent_at', `${date}T00:00:00Z`)
       .lt('sent_at', `${date}T23:59:59Z`);
-    
+
     if (error) {
       console.error('Error checking if birthday message has been sent:', error);
       // If there's an error, assume it hasn't been sent to be safe
       return false;
     }
-    
+
     return count !== null && count > 0;
   } catch (error) {
     console.error('Unexpected error checking if birthday message has been sent:', error);
@@ -72,7 +78,7 @@ export async function logBirthdayMessage(
 ): Promise<void> {
   try {
     const supabaseAdmin = getSupabaseAdmin();
-    
+
     // Create the log entry
     const { error } = await supabaseAdmin
       .from('message_logs')
@@ -89,7 +95,7 @@ export async function logBirthdayMessage(
         cost: details.cost || null,
         segments: details.segments || null
       });
-    
+
     if (error) {
       console.error('Error logging birthday message:', error);
     }
