@@ -41,10 +41,10 @@ function logSmsSend(level: 'info' | 'warn' | 'error', message: string, data?: an
  */
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  // In Next.js 13+, we need to await params to ensure they're properly resolved
-  const { id } = await Promise.resolve(params);
+  // In Next.js 15+, we need to await params to ensure they're properly resolved
+  const { id } = await params;
   const messageId = id;
   const requestId = `req_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
 
@@ -55,7 +55,7 @@ export async function POST(
     logSmsSend('info', `Request body: ${JSON.stringify(requestBody)}`, { requestId });
   } catch (e) {
     // No request body or invalid JSON
-    logSmsSend('info', `No request body or invalid JSON: ${e.message}`, { requestId });
+    logSmsSend('info', `No request body or invalid JSON: ${e instanceof Error ? e.message : String(e)}`, { requestId });
   }
 
   // Forward the request to the main send endpoint

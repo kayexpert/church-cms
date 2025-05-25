@@ -9,13 +9,14 @@ import { personalizeMessage } from '@/utils/message-utils';
  */
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    console.log(`Send message endpoint called for message ID: ${params.id}`);
+    const { id } = await params;
+    console.log(`Send message endpoint called for message ID: ${id}`);
 
     // Get the message ID from the URL
-    const messageId = params.id;
+    const messageId = id;
 
     if (!messageId) {
       return NextResponse.json({
@@ -231,7 +232,7 @@ export async function POST(
             results.push({
               success: false,
               recipientId: recipient.recipient_id,
-              error: `Error getting members for group: ${groupError.message}`
+              error: `Error getting members for group: ${(groupError as any) instanceof Error ? (groupError as any).message : String(groupError)}`
             });
             totalFailed++;
             continue;
@@ -250,7 +251,7 @@ export async function POST(
 
           // Extract active members with phone numbers
           const validMembers = groupMembers
-            .filter(m => m && m.status === 'active' && m.primary_phone_number);
+            .filter((m: any) => m && m.status === 'active' && m.primary_phone_number);
 
           if (validMembers.length === 0) {
             console.error(`No active members with phone numbers found in group ${recipient.recipient_id}`);

@@ -52,11 +52,15 @@ export async function POST() {
         console.log('Error creating exec_sql function using RPC, trying direct SQL...');
 
         // Try direct SQL execution
-        const { error: directError } = await supabaseAdmin.from('_temp_sql')
-          .insert({ sql: execSqlPart })
-          .select()
-          .single()
-          .catch(() => ({ error: new Error('Failed to execute direct SQL') }));
+        let directError = null;
+        try {
+          await supabaseAdmin.from('_temp_sql')
+            .insert({ sql: execSqlPart })
+            .select()
+            .single();
+        } catch (err) {
+          directError = new Error('Failed to execute direct SQL');
+        }
 
         if (directError) {
           console.log('Direct SQL execution failed, trying raw query...');
@@ -105,8 +109,11 @@ export async function POST() {
             );
           `;
 
-          await supabaseAdmin.rpc('exec_sql', { sql_query: createMessagingConfigTable })
-            .catch(() => console.log('Error creating messaging_configurations table'));
+          try {
+            await supabaseAdmin.rpc('exec_sql', { sql_query: createMessagingConfigTable });
+          } catch {
+            console.log('Error creating messaging_configurations table');
+          }
 
           // Create messages table if it doesn't exist
           const createMessagesTable = `
@@ -124,8 +131,11 @@ export async function POST() {
             );
           `;
 
-          await supabaseAdmin.rpc('exec_sql', { sql_query: createMessagesTable })
-            .catch(() => console.log('Error creating messages table'));
+          try {
+            await supabaseAdmin.rpc('exec_sql', { sql_query: createMessagesTable });
+          } catch {
+            console.log('Error creating messages table');
+          }
 
           // Create message_recipients table if it doesn't exist
           const createMessageRecipientsTable = `
@@ -138,8 +148,11 @@ export async function POST() {
             );
           `;
 
-          await supabaseAdmin.rpc('exec_sql', { sql_query: createMessageRecipientsTable })
-            .catch(() => console.log('Error creating message_recipients table'));
+          try {
+            await supabaseAdmin.rpc('exec_sql', { sql_query: createMessageRecipientsTable });
+          } catch {
+            console.log('Error creating message_recipients table');
+          }
 
           // Create message_logs table if it doesn't exist
           const createMessageLogsTable = `
@@ -153,8 +166,11 @@ export async function POST() {
             );
           `;
 
-          await supabaseAdmin.rpc('exec_sql', { sql_query: createMessageLogsTable })
-            .catch(() => console.log('Error creating message_logs table'));
+          try {
+            await supabaseAdmin.rpc('exec_sql', { sql_query: createMessageLogsTable });
+          } catch {
+            console.log('Error creating message_logs table');
+          }
 
           // Create message_templates table if it doesn't exist
           const createMessageTemplatesTable = `
@@ -167,8 +183,11 @@ export async function POST() {
             );
           `;
 
-          await supabaseAdmin.rpc('exec_sql', { sql_query: createMessageTemplatesTable })
-            .catch(() => console.log('Error creating message_templates table'));
+          try {
+            await supabaseAdmin.rpc('exec_sql', { sql_query: createMessageTemplatesTable });
+          } catch {
+            console.log('Error creating message_templates table');
+          }
 
           // Try to insert a default configuration if none exists
           try {

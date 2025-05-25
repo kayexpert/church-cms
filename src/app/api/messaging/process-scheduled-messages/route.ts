@@ -568,7 +568,7 @@ async function processGroupRecipient(message: any, recipient: any) {
     }
 
     // Get all member IDs from the group
-    const memberIds = groupData.map(item => item.member_id);
+    const memberIds = groupData.map((item: any) => item.member_id);
 
     // Get the members' details
     const { data: members, error: membersError } = await supabaseAdmin

@@ -26,22 +26,11 @@ export async function GET() {
 
     // If the direct execution fails, check if the function exists by querying the PostgreSQL catalog
     try {
-      // Use a direct query to check if the function exists
-      const { data, error } = await supabase
-        .from('pg_catalog')
+      // Try to check for the function directly
+      const { data, error } = await supabase.from('pg_proc')
         .select('*')
-        .limit(1)
-        .then(async () => {
-          // If we can query pg_catalog, try to check for the function
-          return await supabase.from('pg_proc')
-            .select('*')
-            .eq('proname', 'exec_sql')
-            .limit(1);
-        })
-        .catch(() => {
-          // If we can't query pg_catalog, return an error
-          return { data: null, error: new Error('Cannot query PostgreSQL catalog') };
-        });
+        .eq('proname', 'exec_sql')
+        .limit(1);
 
       if (!error && data && data.length > 0) {
         return NextResponse.json({

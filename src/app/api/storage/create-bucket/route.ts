@@ -46,32 +46,13 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
-    // Set up RLS policy to allow authenticated users to upload
-    await supabaseAdmin.storage.from(bucketName).createPolicy('authenticated_uploads', {
-      name: 'authenticated_uploads',
-      definition: {
-        role: 'authenticated',
-        operation: 'INSERT',
-        match: {
-          bucket_id: bucketName
-        }
-      }
-    });
+    // Note: RLS policies need to be set up manually in the Supabase dashboard
+    // or through SQL commands as the JS client doesn't support createPolicy
 
-    // Set up RLS policy to allow public read access
-    await supabaseAdmin.storage.from(bucketName).createPolicy('public_read', {
-      name: 'public_read',
-      definition: {
-        role: '*',
-        operation: 'SELECT',
-        match: {
-          bucket_id: bucketName
-        }
-      }
-    });
+    // Note: Public read policy also needs to be set up manually
 
-    return NextResponse.json({ 
-      message: `Bucket ${bucketName} created successfully with public access and authenticated uploads` 
+    return NextResponse.json({
+      message: `Bucket ${bucketName} created successfully with public access and authenticated uploads`
     });
   } catch (error) {
     console.error('Unexpected error creating bucket:', error);

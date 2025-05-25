@@ -1,6 +1,9 @@
 "use client";
 
 import { Suspense, useCallback, memo, lazy } from "react";
+
+// Force dynamic rendering for pages using search params
+export const dynamic = 'force-dynamic';
 import { Layout } from "@/components/layout";
 import { MessagingSidebar } from "@/components/messaging/messaging-sidebar";
 import { MessagingSettingsLink } from "@/components/messaging/settings-link";
@@ -107,5 +110,28 @@ function MessagingPageContent() {
   );
 }
 
+// Wrapper component with Suspense boundary for useSearchParams
+function MessagingPage() {
+  return (
+    <Suspense fallback={
+      <Layout title="Messaging">
+        <div className="space-y-4">
+          <Skeleton className="h-8 w-1/3" />
+          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+            <div className="md:col-span-1 lg:col-span-1">
+              <Skeleton className="h-64 w-full" />
+            </div>
+            <div className="md:col-span-2 lg:col-span-3">
+              <Skeleton className="h-96 w-full" />
+            </div>
+          </div>
+        </div>
+      </Layout>
+    }>
+      <MessagingPageContent />
+    </Suspense>
+  );
+}
+
 // Export memoized component for better performance
-export default memo(MessagingPageContent);
+export default memo(MessagingPage);

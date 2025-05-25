@@ -5,11 +5,9 @@ import "@/styles/fonts.css"; // Import custom font CSS
 import { nunito, lato } from "@/lib/fonts";
 import { ThemeProvider } from "@/components/theme-provider";
 import { TimezoneProvider } from "@/components/timezone-provider";
-import { AuthProvider } from "@/components/auth/auth-provider";
-import { QueryProvider } from "@/providers/query-provider";
-import { MessagingProvider } from "@/contexts/messaging-context";
 import { Toaster } from "@/components/ui/sonner";
-import { ConnectionErrorBoundary } from "@/components/connection-error-boundary";
+import { ClientProviders } from "@/components/client-providers";
+import { ErrorBoundary } from "@/components/ui/error-boundary";
 
 export const metadata: Metadata = {
   title: "Church Management System",
@@ -90,25 +88,21 @@ export default function RootLayout({
       <body
         className={`${nunito.variable} ${lato.variable} antialiased`}
       >
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="dark"
-          enableSystem
-          disableTransitionOnChange
-        >
-          <TimezoneProvider>
-            <ConnectionErrorBoundary>
-              <AuthProvider>
-                <QueryProvider>
-                  <MessagingProvider>
-                    {children}
-                    <Toaster />
-                  </MessagingProvider>
-                </QueryProvider>
-              </AuthProvider>
-            </ConnectionErrorBoundary>
-          </TimezoneProvider>
-        </ThemeProvider>
+        <ErrorBoundary>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="dark"
+            enableSystem
+            disableTransitionOnChange
+          >
+            <TimezoneProvider>
+              <ClientProviders>
+                {children}
+                <Toaster />
+              </ClientProviders>
+            </TimezoneProvider>
+          </ThemeProvider>
+        </ErrorBoundary>
       </body>
     </html>
   );

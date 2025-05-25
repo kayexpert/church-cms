@@ -28,7 +28,7 @@ export async function POST(request: Request) {
     }
 
     const assetId = disposalData.asset_id;
-    const assetName = disposalData.assets?.name || "Unknown Asset";
+    const assetName = (disposalData.assets as any)?.name || "Unknown Asset";
 
     // 1. Update the asset disposal record
     const { error: disposalError } = await supabase

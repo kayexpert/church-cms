@@ -124,8 +124,7 @@ export function AssetDisposalForm({
           }
 
           // If we get here, the manual disposal succeeded
-          // Invalidate queries to refresh the UI
-          disposeAsset.onSuccess?.();
+          // The mutation will handle query invalidation automatically
         } catch (manualError) {
           console.error("Manual disposal also failed:", manualError);
           throw manualError;

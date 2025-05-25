@@ -49,11 +49,15 @@ export async function POST(request: NextRequest) {
     );
 
     // Check if the birthday_messages table exists, create it if not
-    const { error: checkTableError } = await supabaseAdmin
-      .from('birthday_messages')
-      .select('id')
-      .limit(1)
-      .catch(() => ({ error: { message: 'Table does not exist' } }));
+    let checkTableError = null;
+    try {
+      await supabaseAdmin
+        .from('birthday_messages')
+        .select('id')
+        .limit(1);
+    } catch (err) {
+      checkTableError = { message: 'Table does not exist' };
+    }
 
     if (checkTableError) {
       console.log('Creating birthday_messages table');
@@ -74,12 +78,13 @@ export async function POST(request: NextRequest) {
       // Try to create the table directly using SQL
       try {
         // Check if the exec_sql RPC function exists
-        const { error: rpcCheckError } = await supabaseAdmin
-          .rpc('exec_sql', { sql_query: 'SELECT 1' })
-          .catch(err => {
-            console.error('Error checking exec_sql RPC function:', err);
-            return { error: err };
-          });
+        let rpcCheckError = null;
+        try {
+          await supabaseAdmin.rpc('exec_sql', { sql_query: 'SELECT 1' });
+        } catch (err) {
+          console.error('Error checking exec_sql RPC function:', err);
+          rpcCheckError = err;
+        }
 
         if (rpcCheckError) {
           console.error('exec_sql RPC function not available:', rpcCheckError);
@@ -106,12 +111,13 @@ export async function POST(request: NextRequest) {
           }
         } else {
           // Use the RPC function to create the table
-          const { error: createTableError } = await supabaseAdmin
-            .rpc('exec_sql', { sql_query: createTableQuery })
-            .catch(err => {
-              console.error('Error executing SQL to create table:', err);
-              return { error: err };
-            });
+          let createTableError = null;
+          try {
+            await supabaseAdmin.rpc('exec_sql', { sql_query: createTableQuery });
+          } catch (err) {
+            console.error('Error executing SQL to create table:', err);
+            createTableError = err;
+          }
 
           if (createTableError) {
             console.error('Error creating birthday_messages table via RPC:', createTableError);

@@ -76,7 +76,7 @@ export function AssetDisposalEditForm({
 
   // Initialize form with disposal data
   const form = useForm<AssetDisposalFormValues>({
-    resolver: zodResolver(assetDisposalFormSchema),
+    resolver: zodResolver(assetDisposalFormSchema) as any,
     defaultValues: {
       asset_id: disposal.asset_id,
       disposal_date: disposal.disposal_date ? new Date(disposal.disposal_date) : new Date(),

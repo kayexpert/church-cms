@@ -10,17 +10,15 @@ import { memberKeys } from "@/providers/query-config";
  * Hook to set up real-time subscriptions for member data
  * This hook subscribes to changes in members table
  * and invalidates the appropriate queries when changes are detected
- * 
+ *
  * @returns An object with the subscription status
  */
 export function useMemberRealTimeSubscriptions() {
   const queryClient = useQueryClient();
   const subscriptionsRef = useRef<{ unsubscribe: () => void }[]>([]);
-  
+
   // Set up real-time subscriptions
   useEffect(() => {
-    console.log("Setting up member real-time subscriptions");
-    
     // Subscribe to member changes
     const memberSubscription = supabase
       .channel('member-changes')
@@ -29,40 +27,39 @@ export function useMemberRealTimeSubscriptions() {
         schema: 'public',
         table: 'members'
       }, (payload) => {
-        console.log('Member changed:', payload);
-        
+
         // Selectively invalidate only the affected components
         // For member changes, we need to update:
         // 1. Stats cards (totalMembers, activeMembers, etc.)
         // 2. Growth chart (if a new member is added)
         // 3. Gender distribution (if gender is changed)
-        
+
         // Invalidate stats
-        queryClient.invalidateQueries({ 
+        queryClient.invalidateQueries({
           queryKey: memberKeys.dashboard.stats
         });
-        
+
         // Invalidate growth data
-        queryClient.invalidateQueries({ 
+        queryClient.invalidateQueries({
           queryKey: memberKeys.dashboard.growth
         });
-        
+
         // Invalidate gender distribution
-        queryClient.invalidateQueries({ 
+        queryClient.invalidateQueries({
           queryKey: memberKeys.dashboard.distribution.gender
         });
-        
+
         // Also invalidate the legacy query keys for backward compatibility
-        queryClient.invalidateQueries({ 
+        queryClient.invalidateQueries({
           queryKey: memberKeys.stats
         });
-        queryClient.invalidateQueries({ 
+        queryClient.invalidateQueries({
           queryKey: memberKeys.growth
         });
-        queryClient.invalidateQueries({ 
+        queryClient.invalidateQueries({
           queryKey: memberKeys.distribution.gender
         });
-        
+
         // Show a toast notification for new entries
         if (payload.eventType === 'INSERT') {
           toast.success('New member added', {
@@ -71,7 +68,7 @@ export function useMemberRealTimeSubscriptions() {
         }
       })
       .subscribe();
-    
+
     // Subscribe to attendance changes
     const attendanceSubscription = supabase
       .channel('attendance-changes')
@@ -81,23 +78,23 @@ export function useMemberRealTimeSubscriptions() {
         table: 'attendance'
       }, (payload) => {
         console.log('Attendance changed:', payload);
-        
+
         // Selectively invalidate only the affected components
         // For attendance changes, we only need to update:
         // 1. Attendance trend chart
-        
+
         // Invalidate attendance trend
-        queryClient.invalidateQueries({ 
+        queryClient.invalidateQueries({
           queryKey: memberKeys.dashboard.attendance
         });
-        
+
         // Also invalidate the legacy query key for backward compatibility
-        queryClient.invalidateQueries({ 
+        queryClient.invalidateQueries({
           queryKey: memberKeys.attendance.trend
         });
       })
       .subscribe();
-    
+
     // Subscribe to attendance records changes
     const attendanceRecordsSubscription = supabase
       .channel('attendance-records-changes')
@@ -106,31 +103,29 @@ export function useMemberRealTimeSubscriptions() {
         schema: 'public',
         table: 'attendance_records'
       }, (payload) => {
-        console.log('Attendance record changed:', payload);
-        
         // Selectively invalidate only the affected components
         // For attendance record changes, we only need to update:
         // 1. Attendance trend chart
-        
+
         // Invalidate attendance trend
-        queryClient.invalidateQueries({ 
+        queryClient.invalidateQueries({
           queryKey: memberKeys.dashboard.attendance
         });
-        
+
         // Also invalidate the legacy query key for backward compatibility
-        queryClient.invalidateQueries({ 
+        queryClient.invalidateQueries({
           queryKey: memberKeys.attendance.trend
         });
       })
       .subscribe();
-    
+
     // Store subscriptions for cleanup
     subscriptionsRef.current = [
       memberSubscription,
       attendanceSubscription,
       attendanceRecordsSubscription
     ];
-    
+
     // Clean up subscriptions on unmount
     return () => {
       console.log("Cleaning up member real-time subscriptions");
@@ -139,12 +134,12 @@ export function useMemberRealTimeSubscriptions() {
           subscription.unsubscribe();
         }
       });
-      
+
       // Clear the subscriptions array
       subscriptionsRef.current = [];
     };
   }, [queryClient]);
-  
+
   return {
     isSubscribed: subscriptionsRef.current.length > 0
   };

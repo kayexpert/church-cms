@@ -186,7 +186,6 @@ export async function POST(request: Request) {
     // This allows the client to still use the calculated balance even if the database update failed
     if (updateError) {
       console.error(`Error updating/creating account ${accountId}:`, updateError);
-      console.warn(`Returning calculated balance (${calculatedBalance}) despite update error`);
 
       return NextResponse.json({
         success: true, // Mark as success so the client doesn't show an error

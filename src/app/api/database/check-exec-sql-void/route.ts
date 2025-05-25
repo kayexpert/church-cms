@@ -33,21 +33,21 @@ export async function GET() {
     }
 
     // If there's an error with exec_sql, try a direct query
-    const { data: directData, error: directError } = await supabase
-      .from('_function_check')
-      .select('*')
-      .limit(1)
-      .then(async () => {
-        // If the above query succeeds, try to check for the function directly
-        return await supabase.from('pg_proc')
-          .select('*')
-          .eq('proname', 'exec_sql_void')
-          .limit(1);
-      })
-      .catch(() => {
-        // If the above fails, return an error
-        return { data: null, error: new Error('Failed to check for function existence') };
-      });
+    let directData = null;
+    let directError = null;
+
+    try {
+      // Try to check for the function directly
+      const result = await supabase.from('pg_proc')
+        .select('*')
+        .eq('proname', 'exec_sql_void')
+        .limit(1);
+
+      directData = result.data;
+      directError = result.error;
+    } catch (err) {
+      directError = new Error('Failed to check for function existence');
+    }
 
     if (!directError && directData && directData.length > 0) {
       return NextResponse.json({

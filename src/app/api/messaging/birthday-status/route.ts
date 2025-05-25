@@ -19,7 +19,7 @@ export async function GET() {
     const now = new Date();
     const month = now.getMonth() + 1; // JavaScript months are 0-indexed
     const day = now.getDate();
-    
+
     console.log(`Checking for birthdays on month: ${month}, day: ${day}`);
 
     // Get all active birthday messages
@@ -94,15 +94,12 @@ export async function GET() {
     }) || [];
 
     if (birthdayMembers.length === 0) {
-      console.log('No members with birthdays found for the current date');
       return NextResponse.json({
         success: true,
         needsProcessing: false,
         reason: 'No members with birthdays found for the current date'
       });
     }
-
-    console.log(`Found ${birthdayMembers.length} members with birthdays`);
 
     // Check if any messages have already been sent today
     const today = now.toISOString().split('T')[0];
@@ -126,10 +123,10 @@ export async function GET() {
 
     if (logs && logs.length > 0) {
       console.log(`Found ${logs.length} birthday messages already sent today`);
-      
+
       // Check if all possible combinations have been sent
       const totalPossibleMessages = birthdayMessages.length * birthdayMembers.length;
-      
+
       if (logs.length >= totalPossibleMessages) {
         console.log('All birthday messages have already been sent today');
         return NextResponse.json({

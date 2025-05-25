@@ -73,23 +73,16 @@ export function AssetDisposalList({
           <ResponsiveTable
             data={disposals}
             keyField="id"
-            emptyMessage={
-              <div className="flex flex-col items-center justify-center text-muted-foreground py-8">
-                <AlertCircle className="h-8 w-8 mb-2" />
-                <p>No disposed assets found</p>
-              </div>
-            }
+            emptyMessage="No disposed assets found"
             columns={[
               {
                 key: "assets",
                 label: "Asset Name",
-                primary: true,
                 render: (value) => <span className="font-medium">{value?.name || "Unknown Asset"}</span>
               },
               {
                 key: "disposal_date",
                 label: "Disposal Date",
-                primary: true,
                 render: (value) => formatDatabaseDate(value)
               },
               {
@@ -191,7 +184,7 @@ export function AssetDisposalList({
       {/* Delete Confirmation Dialog */}
       <DeleteConfirmationDialog
         isOpen={!!disposalToDelete}
-        onClose={() => setDisposalToDelete(null)}
+        onCancel={() => setDisposalToDelete(null)}
         onConfirm={() => {
           if (disposalToDelete) {
             onDelete(disposalToDelete);

@@ -107,7 +107,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (session) {
         const expiresAt = session.expires_at;
         const now = Math.floor(Date.now() / 1000);
-        const timeRemaining = expiresAt - now;
+        const timeRemaining = (expiresAt || 0) - now;
 
         // If token is about to expire, refresh it
         if (timeRemaining < config.auth.sessionRefreshThreshold) {

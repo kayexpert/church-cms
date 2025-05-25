@@ -1,6 +1,9 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase-server";
 
+// Force dynamic rendering for auth pages
+export const dynamic = 'force-dynamic';
+
 export default async function LoginPage() {
   try {
     // Check if the user is already logged in

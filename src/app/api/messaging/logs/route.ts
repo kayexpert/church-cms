@@ -105,7 +105,6 @@ export async function POST(request: NextRequest) {
           }, { status: 500 });
         }
 
-        console.log('Message log created with minimal fields:', minimalLog);
         return NextResponse.json({
           success: true,
           log: minimalLog,
@@ -156,8 +155,6 @@ export async function POST(request: NextRequest) {
  */
 export async function GET(request: NextRequest) {
   try {
-    console.log('Get message logs endpoint called');
-
     // Get query parameters
     const url = new URL(request.url);
     const messageId = url.searchParams.get('message_id');

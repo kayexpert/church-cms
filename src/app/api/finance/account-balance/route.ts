@@ -71,11 +71,13 @@ export async function GET(request: NextRequest) {
             id: accountId,
             name: "Unknown Account",
             opening_balance: 0,
-            balance: 0
+            balance: 0,
+            account_type: "unknown",
+            is_default: false
           };
 
           // Calculate the balance
-          const calculatedBalance = calculateAccountBalance(accountObj, transactions);
+          const calculatedBalance = calculateAccountBalance(accountObj as any, transactions);
           console.log(`Calculated balance from ${transactions.length} transactions: ${calculatedBalance}`);
 
           return NextResponse.json({
@@ -137,7 +139,7 @@ export async function GET(request: NextRequest) {
         const { calculateAccountBalance } = await import("@/lib/calculate-account-balance");
 
         // Calculate the balance using our centralized utility
-        const calculatedBalance = calculateAccountBalance(data, transactions || []);
+        const calculatedBalance = calculateAccountBalance(data as any, transactions || []);
         console.log(`Calculated balance from ${transactions?.length || 0} transactions: ${calculatedBalance}`);
 
         // Return the calculated balance

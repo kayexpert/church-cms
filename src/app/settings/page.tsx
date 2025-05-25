@@ -2,6 +2,9 @@
 
 import { useState, useEffect, useCallback, useMemo, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
+
+// Force dynamic rendering for pages using search params
+export const dynamic = 'force-dynamic';
 import { Layout } from "@/components/layout";
 import { SettingsSidebar } from "@/components/settings/settings-sidebar";
 import { MobileSettingsNav } from "@/components/settings/mobile-settings-nav";
@@ -18,7 +21,7 @@ import { FinanceSettingsSkeleton } from "@/components/settings/finance/finance-s
 import { DatabaseSettingsSkeleton } from "@/components/settings/database/database-settings-skeleton";
 import { MessageSettingsSkeleton } from "@/components/settings/messages/message-settings-skeleton";
 
-export default function SettingsPage() {
+function SettingsPageContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const [activeTab, setActiveTab] = useState("general");
@@ -142,5 +145,28 @@ export default function SettingsPage() {
         </div>
       </div>
     </Layout>
+  );
+}
+
+// Wrapper component with Suspense boundary for useSearchParams
+export default function SettingsPage() {
+  return (
+    <Suspense fallback={
+      <Layout title="Settings">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 lg:gap-6">
+          <div className="hidden lg:block lg:col-span-1">
+            <Skeleton className="h-96 w-full" />
+          </div>
+          <div className="lg:col-span-3">
+            <Card className="p-6">
+              <Skeleton className="h-8 w-1/3 mb-4" />
+              <Skeleton className="h-64 w-full" />
+            </Card>
+          </div>
+        </div>
+      </Layout>
+    }>
+      <SettingsPageContent />
+    </Suspense>
   );
 }

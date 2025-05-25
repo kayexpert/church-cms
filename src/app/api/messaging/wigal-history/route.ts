@@ -74,7 +74,7 @@ export async function POST(request: NextRequest) {
       headers: {
         'Content-Type': 'application/json',
         'API-KEY': config.api_key,
-        'USERNAME': config.api_secret || config.username || 'default',
+        'USERNAME': config.api_secret || (config as any).username || 'default',
       },
       body: JSON.stringify(payload),
     });

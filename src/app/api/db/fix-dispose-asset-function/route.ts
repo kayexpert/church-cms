@@ -68,12 +68,15 @@ export async function GET() {
       console.error("Error executing SQL via exec_sql:", queryError);
 
       // Try direct query as a fallback
-      const { error: directError } = await supabase
-        .from('_dummy_query')
-        .select('*')
-        .limit(1)
-        .then(() => ({ error: null }))
-        .catch(err => ({ error: err }));
+      let directError = null;
+      try {
+        await supabase
+          .from('_dummy_query')
+          .select('*')
+          .limit(1);
+      } catch (err) {
+        directError = err;
+      }
 
       if (directError) {
         console.error("Error with direct query:", directError);

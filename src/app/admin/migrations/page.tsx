@@ -382,7 +382,7 @@ export default function MigrationsPage() {
                 <AlertDescription>
                   {directMigrationResult.message}
                 </AlertDescription>
-                {directMigrationResult.details && directMigrationResult.details.verification && (
+                {directMigrationResult.details && (directMigrationResult.details as any).verification && (
                   <div className="mt-2 ml-8">
                     <p className="font-semibold">Verification Results:</p>
                     <ul className="list-disc pl-5 text-sm">

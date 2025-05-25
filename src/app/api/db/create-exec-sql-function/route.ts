@@ -104,9 +104,11 @@ async function createExecSqlFunction() {
       console.log('Trying to create function with temporary table');
 
       // Create a temporary table if it doesn't exist
-      await supabaseAdmin.from('_temp_migrations').select('id').limit(1).catch(() => {
+      try {
+        await supabaseAdmin.from('_temp_migrations').select('id').limit(1);
+      } catch {
         // Table doesn't exist, create it
-        return supabaseAdmin.rpc("exec_sql", {
+        await supabaseAdmin.rpc("exec_sql", {
           sql_query: `
             CREATE TABLE IF NOT EXISTS _temp_migrations (
               id SERIAL PRIMARY KEY,
@@ -116,7 +118,7 @@ async function createExecSqlFunction() {
             );
           `
         });
-      });
+      }
 
       // Insert the SQL into the temporary table
       const { error: insertError } = await supabaseAdmin.from('_temp_migrations').insert({

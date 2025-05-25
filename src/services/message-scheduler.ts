@@ -1037,8 +1037,6 @@ async function processRecipient(message: Message, recipient: MessageRecipient) {
         const membersWithoutPhoneList = members.filter(m => !m.primary_phone_number);
 
         for (const member of membersWithoutPhoneList) {
-          console.warn(`Member ${member.id} (${member.first_name} ${member.last_name}) in group ${recipient.recipient_id} does not have a phone number`);
-
           // Log this warning to help with debugging
           try {
             await createMessageLog({

@@ -1,5 +1,8 @@
 import { LoginForm } from "@/components/auth/login-form";
 
+// Force dynamic rendering for auth pages
+export const dynamic = 'force-dynamic';
+
 export default function Home() {
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-background to-muted">

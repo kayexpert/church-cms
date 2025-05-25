@@ -37,7 +37,7 @@ export function ApiLoginForm({ redirectPath }: ApiLoginFormProps) {
   const [showPassword, setShowPassword] = useState(false);
 
   const form = useForm<LoginFormValues>({
-    resolver: zodResolver(loginSchema),
+    resolver: zodResolver(loginSchema) as any,
     defaultValues: {
       email: "",
       password: "",
@@ -97,7 +97,6 @@ export function ApiLoginForm({ redirectPath }: ApiLoginFormProps) {
 
       // Show success message
       toast.success("Logged in successfully");
-      console.log("API Login successful, redirecting to:", result.redirectTo);
 
       // Wait a moment to show the success message
       await new Promise(resolve => setTimeout(resolve, 1000));

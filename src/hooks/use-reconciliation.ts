@@ -269,15 +269,6 @@ export function useReconciliationSummary(
     // This is the key value that determines if the reconciliation is balanced
     const difference = bankBalance - reconciledAmount;
 
-    // Log the calculation for debugging
-    console.log('useReconciliationSummary calculation:', {
-      bankBalance,
-      reconciledAmount,
-      difference,
-      reconciledTransactionsCount: reconciledTransactions.length,
-      totalTransactionsCount: transactions?.length || 0
-    });
-
     // Calculate total amount once to avoid redundant calculations
     const totalAmount = transactions?.reduce((sum, tx) => {
       if (tx.transaction_type === 'income' || tx.transaction_type === 'transfer_in') {

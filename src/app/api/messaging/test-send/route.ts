@@ -135,15 +135,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    logSmsTest('info', `Using SMS provider: ${smsConfig.provider_name} [${requestId}]`);
+    logSmsTest('info', `Using SMS provider: ${(smsConfig as any).provider_name} [${requestId}]`);
 
     // Send the SMS
-    logSmsTest('info', `Sending test SMS to ${phoneNumber} with provider ${smsConfig.provider_name} [${requestId}]`);
+    logSmsTest('info', `Sending test SMS to ${phoneNumber} with provider ${(smsConfig as any).provider_name} [${requestId}]`);
     const result = await sendSMSWithConfig(
-      smsConfig,
+      smsConfig as any,
       phoneNumber,
       message,
-      senderId || smsConfig.sender_id
+      senderId || (smsConfig as any).sender_id
     );
 
     // Log the result
@@ -152,22 +152,10 @@ export async function POST(request: NextRequest) {
     // Create a message log entry for debugging purposes
     try {
       await createMessageLog({
-        message_id: null, // No message ID for test messages
-        recipient: phoneNumber,
-        status: result.success ? 'delivered' : 'failed',
-        provider: smsConfig.provider_name,
-        provider_message_id: result.messageId || null,
-        error_message: result.error || null,
-        message_content: message,
-        sender_id: senderId || smsConfig.sender_id,
-        message_type: 'test',
-        metadata: {
-          test: true,
-          debug: debug || false,
-          requestId,
-          bulkDetails: result.bulkDetails,
-          timestamp: new Date().toISOString()
-        }
+        message_id: 'test-message', // No message ID for test messages
+        recipient_id: phoneNumber,
+        status: result.success ? 'sent' : 'failed',
+        error_message: result.error || undefined
       });
       logSmsTest('info', `Created message log entry [${requestId}]`);
 
@@ -185,7 +173,7 @@ export async function POST(request: NextRequest) {
               debug,
             },
             response_data: result,
-            provider: smsConfig.provider_name,
+            provider: (smsConfig as any).provider_name,
           });
           logSmsTest('info', `Created error log entry [${requestId}]`);
         } catch (errorLogError) {
@@ -204,9 +192,9 @@ export async function POST(request: NextRequest) {
         message: 'Test message sent successfully',
         messageId: result.messageId,
         details: {
-          provider: smsConfig.provider_name,
+          provider: (smsConfig as any).provider_name,
           phoneNumber,
-          senderId: senderId || smsConfig.sender_id || 'default',
+          senderId: senderId || (smsConfig as any).sender_id || 'default',
           bulkDetails: result.bulkDetails
         },
         debug: debug ? {
@@ -225,9 +213,9 @@ export async function POST(request: NextRequest) {
           error: 'Failed to send test message',
           message: result.error || 'Unknown error',
           details: debug ? {
-            provider: smsConfig.provider_name,
+            provider: (smsConfig as any).provider_name,
             phoneNumber,
-            senderId: senderId || smsConfig.sender_id || 'default',
+            senderId: senderId || (smsConfig as any).sender_id || 'default',
             fullResult: result
           } : undefined,
           requestId,

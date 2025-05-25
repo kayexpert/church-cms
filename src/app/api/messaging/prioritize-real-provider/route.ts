@@ -29,8 +29,6 @@ export async function POST(request: NextRequest) {
       }, { status: 500 });
     }
 
-    console.log(`Found ${count} SMS configurations in total`);
-
     // Step 2: Get all SMS configurations
     const { data: allConfigs, error: allConfigsError } = await supabaseAdmin
       .from('messaging_configurations')

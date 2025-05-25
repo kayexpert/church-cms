@@ -264,7 +264,7 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({
           success: false,
           error: 'Invalid phone number',
-          details: `Error validating phone number for member ${memberData.first_name} ${memberData.last_name}: ${phoneError.message}`,
+          details: `Error validating phone number for member ${memberData.first_name} ${memberData.last_name}: ${phoneError instanceof Error ? phoneError.message : String(phoneError)}`,
           message,
           recipient,
           errorType: 'invalid_phone_number'
@@ -346,8 +346,8 @@ export async function POST(request: NextRequest) {
     const smsConfigResponse = await getDefaultSMSConfig();
 
     // If no provider is configured, return an error
-    if (!smsConfigResponse.success && smsConfigResponse.errorType === 'no_provider') {
-      console.warn('No SMS provider configured:', smsConfigResponse.message);
+    if (!smsConfigResponse.success && (smsConfigResponse as any).errorType === 'no_provider') {
+      console.warn('No SMS provider configured:', (smsConfigResponse as any).message);
 
       // If we're not sending now, we can continue without the SMS config
       if (!sendNow) {
@@ -358,8 +358,8 @@ export async function POST(request: NextRequest) {
           error: 'No SMS provider configured',
           errorType: 'no_provider',
           message: 'No SMS provider has been configured. Please set up an SMS provider in the messaging settings.',
-          details: smsConfigResponse.message,
-          message: messageData,
+          details: (smsConfigResponse as any).message,
+          messageData: message,
           recipient
         }, { status: 404 });
       }
@@ -388,7 +388,7 @@ export async function POST(request: NextRequest) {
       console.log('Sending message directly to individual recipient');
 
       try {
-        const smsConfig = smsConfigResponse.config;
+        const smsConfig = smsConfigResponse.config!;
         console.log('Using SMS configuration:', {
           provider: smsConfig.provider_name,
           senderId: smsConfig.sender_id,
@@ -402,19 +402,19 @@ export async function POST(request: NextRequest) {
         }
 
         // Personalize the message content
-        const personalizedContent = personalizeMessage(content, member);
+        const personalizedContent = personalizeMessage(content, member! as any);
 
-        console.log(`Sending personalized message to ${member.first_name} ${member.last_name}:`, {
+        console.log(`Sending personalized message to ${member!.first_name} ${member!.last_name}:`, {
           originalContent: content.substring(0, 50) + (content.length > 50 ? '...' : ''),
           personalizedContent: personalizedContent.substring(0, 50) + (personalizedContent.length > 50 ? '...' : ''),
           hasPersonalization: personalizedContent !== content
         });
 
         // Send the SMS using the configured provider with personalized content
-        console.log(`Sending SMS to ${member.primary_phone_number} using provider ${smsConfig.provider_name}`);
+        console.log(`Sending SMS to ${member!.primary_phone_number} using provider ${smsConfig.provider_name}`);
         const smsResult = await sendSMSWithConfig(
           smsConfig,
-          member.primary_phone_number,
+          member!.primary_phone_number,
           personalizedContent,
           smsConfig.sender_id
         );
@@ -435,8 +435,6 @@ export async function POST(request: NextRequest) {
         if (logError) {
           console.error('Error creating message log:', logError);
           // Continue anyway, this is not critical
-        } else {
-          console.log('Message log created:', log);
         }
 
         // If the SMS failed to send, return an error

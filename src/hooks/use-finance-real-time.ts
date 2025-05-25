@@ -80,8 +80,6 @@ export function useFinanceRealTimeSubscriptions(timeFrame: string = 'month') {
         schema: 'public',
         table: 'expenditure_entries'
       }, (payload) => {
-        console.log('Expenditure entry changed:', payload);
-
         // Selectively invalidate only the affected components
         // For expenditure entries, we need to update:
         // 1. Stats cards (totalExpenditure, netCash)
@@ -162,8 +160,6 @@ export function useFinanceRealTimeSubscriptions(timeFrame: string = 'month') {
         schema: 'public',
         table: 'accounts'
       }, (payload) => {
-        console.log('Account changed:', payload);
-
         // For account changes, we don't need to update any dashboard components
         // as accounts themselves don't directly affect the dashboard data
         // However, we'll invalidate the legacy query key for backward compatibility

@@ -64,16 +64,11 @@ export function useFinancialData(timeFrame: string = 'month') {
           throw new Error(result.error || "Failed to fetch dashboard data");
         }
 
-        console.log("Successfully fetched data from simplified API");
         return result.data;
       } catch (apiError) {
-        console.warn("Error using simplified API endpoint:", apiError);
-
         // Fall back to fetching data directly in the client
-        console.warn("Falling back to client-side data fetching");
         try {
           const directData = await fetchDataDirectly(timeFrame);
-          console.log("Successfully fetched data directly from client");
           return directData;
         } catch (directError) {
           console.error("Error fetching data directly:", directError);
@@ -170,9 +165,6 @@ async function fetchDataDirectly(timeFrame: string): Promise<FinancialData> {
         ORDER BY
           amount DESC
       `
-    }).then(result => {
-      console.log('Client-side income categories result:', result);
-      return result;
     }),
 
     // Expenditure by category - using a direct SQL query for more reliable results
@@ -192,9 +184,6 @@ async function fetchDataDirectly(timeFrame: string): Promise<FinancialData> {
         ORDER BY
           amount DESC
       `
-    }).then(result => {
-      console.log('Client-side expenditure categories result:', result);
-      return result;
     })
   ]);
 

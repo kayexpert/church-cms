@@ -484,13 +484,9 @@ export async function uploadMemberImage(file: File, memberId: string): Promise<S
  */
 export async function getMemberStats(): Promise<ServiceResponse<MemberStats>> {
   try {
-    console.log('Fetching member stats...');
-
     // Always use the direct query approach for more reliable results
     const currentDate = new Date();
     const firstDayOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1).toISOString();
-
-    console.log('First day of current month:', firstDayOfMonth);
 
     const { data: members, error: membersError } = await supabase
       .from('members')
@@ -501,8 +497,6 @@ export async function getMemberStats(): Promise<ServiceResponse<MemberStats>> {
       console.error('Error in member stats query:', membersError);
       return { data: null, error: membersError };
     }
-
-    console.log(`Retrieved ${members.length} members for stats calculation`);
 
     // Calculate stats on the client side
     const totalMembers = members.length;
@@ -516,8 +510,6 @@ export async function getMemberStats(): Promise<ServiceResponse<MemberStats>> {
       inactiveMembers,
       newMembersThisMonth
     };
-
-    console.log('Calculated member stats:', stats);
 
     return {
       data: stats,

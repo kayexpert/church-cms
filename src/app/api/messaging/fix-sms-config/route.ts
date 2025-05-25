@@ -115,23 +115,23 @@ export async function POST(request: NextRequest) {
     }
 
     // If there is a default SMS provider but it's missing required fields
-    if (smsConfig && (!smsConfig.api_key || !smsConfig.sender_id)) {
+    if (smsConfig && (!(smsConfig as any).api_key || !(smsConfig as any).sender_id)) {
       console.log('Default SMS provider is missing required fields, updating it');
 
       const updates: any = {};
 
-      if (!smsConfig.api_key) {
-        updates.api_key = `${smsConfig.provider_name}-api-key`;
+      if (!(smsConfig as any).api_key) {
+        updates.api_key = `${(smsConfig as any).provider_name}-api-key`;
       }
 
-      if (!smsConfig.sender_id) {
+      if (!(smsConfig as any).sender_id) {
         updates.sender_id = 'ChurchCMS';
       }
 
       const { error: updateError } = await supabase
         .from('messaging_configurations')
         .update(updates)
-        .eq('id', smsConfig.id);
+        .eq('id', (smsConfig as any).id);
 
       if (updateError) {
         console.error('Error updating SMS configuration:', updateError);
@@ -154,10 +154,10 @@ export async function POST(request: NextRequest) {
       success: true,
       message: 'SMS provider is already properly configured',
       config: {
-        provider_name: smsConfig.provider_name,
-        sender_id: smsConfig.sender_id,
-        has_api_key: !!smsConfig.api_key,
-        is_default: smsConfig.is_default
+        provider_name: (smsConfig as any).provider_name,
+        sender_id: (smsConfig as any).sender_id,
+        has_api_key: !!(smsConfig as any).api_key,
+        is_default: (smsConfig as any).is_default
       }
     });
   } catch (error) {

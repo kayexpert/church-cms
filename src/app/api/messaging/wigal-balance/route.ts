@@ -48,7 +48,7 @@ export async function GET(request: NextRequest) {
       method: 'GET',
       headers: {
         'API-KEY': config.api_key,
-        'USERNAME': config.api_secret || config.username || 'default',
+        'USERNAME': config.api_secret || (config as any).username || 'default',
         'Cache-Control': 'no-cache',
       },
     });

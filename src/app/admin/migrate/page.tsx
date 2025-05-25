@@ -76,14 +76,14 @@ export default function MigratePage() {
                 <CheckCircle className="h-4 w-4 text-green-500" />
                 <AlertTitle>Migration Completed</AlertTitle>
                 <AlertDescription>
-                  Processed {result.totalProcessed} entries
+                  Processed {(result as any).totalProcessed} entries
                 </AlertDescription>
               </Alert>
 
               <div className="border rounded-lg overflow-hidden">
                 <div className="bg-muted p-2 text-sm font-medium">Results</div>
                 <div className="p-2 max-h-[300px] overflow-y-auto">
-                  <pre className="text-xs whitespace-pre-wrap">{JSON.stringify(result.results, null, 2)}</pre>
+                  <pre className="text-xs whitespace-pre-wrap">{JSON.stringify((result as any).results, null, 2)}</pre>
                 </div>
               </div>
             </div>

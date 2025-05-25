@@ -33,8 +33,6 @@ export async function POST(request: NextRequest) {
       }, { status: 500 });
     }
 
-    console.log('Migration executed successfully');
-
     // Verify the column was added
     const { data: columnCheck, error: columnCheckError } = await supabaseAdmin
       .from('message_logs')

@@ -70,9 +70,9 @@ export function AssetList({
   const getStatusBadge = useCallback((status: string) => {
     switch (status) {
       case "active":
-        return <Badge variant="success">Active</Badge>;
+        return <Badge variant="default">Active</Badge>;
       case "in_repair":
-        return <Badge variant="warning">In Repair</Badge>;
+        return <Badge variant="secondary">In Repair</Badge>;
       case "disposed":
         return <Badge variant="destructive">Disposed</Badge>;
       default:
@@ -130,23 +130,16 @@ export function AssetList({
             data={assets}
             keyField="id"
             onRowClick={onView ? (row) => onView(row) : undefined}
-            emptyMessage={
-              <div className="flex flex-col items-center justify-center text-muted-foreground py-8">
-                <AlertCircle className="h-8 w-8 mb-2" />
-                <p>No assets found</p>
-              </div>
-            }
+            emptyMessage="No assets found"
             columns={[
               {
                 key: "name",
                 label: "Asset Name",
-                primary: true,
                 render: (value) => <span className="font-medium">{value}</span>
               },
               {
                 key: "asset_types",
                 label: "Type",
-                primary: true,
                 render: (value) => value?.name || "Unknown"
               },
               {
@@ -162,7 +155,6 @@ export function AssetList({
               {
                 key: "status",
                 label: "Status",
-                primary: true,
                 render: (value) => getStatusBadge(value)
               }
             ]}
@@ -264,7 +256,7 @@ export function AssetList({
       {/* Delete Confirmation Dialog */}
       <DeleteConfirmationDialog
         isOpen={!!assetToDelete}
-        onClose={() => setAssetToDelete(null)}
+        onCancel={() => setAssetToDelete(null)}
         onConfirm={() => {
           if (assetToDelete) {
             onDelete(assetToDelete);

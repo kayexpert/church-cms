@@ -81,9 +81,6 @@ export async function GET(request: Request) {
           ORDER BY
             amount DESC
         `
-      }).then(result => {
-        console.log('Income categories result:', result);
-        return result;
       }),
 
       // Expenditure by category - using LEFT JOIN for better handling of null categories
@@ -104,9 +101,6 @@ export async function GET(request: Request) {
           ORDER BY
             amount DESC
         `
-      }).then(result => {
-        console.log('Expenditure categories result:', result);
-        return result;
       })
     ]);
 

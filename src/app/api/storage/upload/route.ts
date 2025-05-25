@@ -54,29 +54,8 @@ export async function POST(request: NextRequest) {
         }, { status: 500 });
       }
 
-      // Set up RLS policies
-      try {
-        // Allow authenticated users to upload
-        await supabaseAdmin.storage.from(bucketName).createPolicy('authenticated_uploads', {
-          name: 'authenticated_uploads',
-          definition: {
-            role: 'authenticated',
-            operation: 'INSERT'
-          }
-        });
-
-        // Allow public read access
-        await supabaseAdmin.storage.from(bucketName).createPolicy('public_read', {
-          name: 'public_read',
-          definition: {
-            role: '*',
-            operation: 'SELECT'
-          }
-        });
-      } catch (policyError) {
-        console.error('Error setting up policies:', policyError);
-        // Continue anyway, we'll use admin access
-      }
+      // Note: RLS policies need to be set up manually in the Supabase dashboard
+      // or through SQL commands as the JS client doesn't support createPolicy
     }
 
     // Convert File to ArrayBuffer

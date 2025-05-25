@@ -71,7 +71,7 @@ export async function GET() {
       console.error("Error creating transaction tables:", createError);
       return NextResponse.json({
         success: false,
-        error: createError.message,
+        error: createError instanceof Error ? createError.message : String(createError),
         step: "create_tables"
       }, { status: 500 });
     }
@@ -265,7 +265,7 @@ export async function GET() {
       console.error("Error syncing from source data:", syncSourceError);
       return NextResponse.json({
         success: false,
-        error: syncSourceError.message,
+        error: syncSourceError instanceof Error ? syncSourceError.message : String(syncSourceError),
         step: "sync_from_source"
       }, { status: 500 });
     }
@@ -343,7 +343,7 @@ export async function GET() {
       console.error("Error recalculating account balances:", recalculateError);
       return NextResponse.json({
         success: false,
-        error: recalculateError.message,
+        error: recalculateError instanceof Error ? recalculateError.message : String(recalculateError),
         step: "recalculate_balances"
       }, { status: 500 });
     }

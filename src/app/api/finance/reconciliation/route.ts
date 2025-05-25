@@ -108,8 +108,8 @@ export async function GET(request: NextRequest) {
           console.log(`Found ${transactionReconciliations.length} reconciliation records in transaction_reconciliations`);
 
           // Create a map of transaction ID to reconciliation status
-          const reconciliationMap = {};
-          transactionReconciliations.forEach(item => {
+          const reconciliationMap: Record<string, any> = {};
+          transactionReconciliations.forEach((item: any) => {
             reconciliationMap[item.transaction_id] = {
               is_reconciled: item.is_reconciled,
               reconciliation_id: item.reconciliation_id
@@ -146,8 +146,8 @@ export async function GET(request: NextRequest) {
             console.log(`Found ${txTableData.length} transactions with reconciliation status in account_tx_table`);
 
             // Create a map of transaction ID to reconciliation status
-            const reconciliationMap = {};
-            txTableData.forEach(tx => {
+            const reconciliationMap: Record<string, any> = {};
+            txTableData.forEach((tx: any) => {
               reconciliationMap[tx.id] = {
                 is_reconciled: tx.is_reconciled,
                 reconciliation_id: tx.reconciliation_id
@@ -184,8 +184,8 @@ export async function GET(request: NextRequest) {
               console.log(`Found ${reconciliationItems.length} reconciliation items`);
 
               // Create a map of transaction ID to reconciliation status
-              const reconciliationMap = {};
-              reconciliationItems.forEach(item => {
+              const reconciliationMap: Record<string, any> = {};
+              reconciliationItems.forEach((item: any) => {
                 reconciliationMap[item.transaction_id] = {
                   is_reconciled: item.is_cleared,
                   reconciliation_id: item.reconciliation_id
@@ -292,8 +292,8 @@ export async function GET(request: NextRequest) {
               console.log(`Retrieved ${txViewData.length} transactions from account_transactions`);
 
               // Create a map of reconciliation items by transaction ID
-              const itemMap = {};
-              reconciliationItems.forEach(item => {
+              const itemMap: Record<string, any> = {};
+              reconciliationItems.forEach((item: any) => {
                 itemMap[item.transaction_id] = item;
               });
 
@@ -345,7 +345,7 @@ export async function GET(request: NextRequest) {
       }
 
       // Combine the datasets, removing duplicates
-      const allTransactions = [...data];
+      const allTransactions = [...(data || [])];
 
       // Add reconciled transactions that might be outside the date range
       reconciledData.forEach(reconciledTx => {

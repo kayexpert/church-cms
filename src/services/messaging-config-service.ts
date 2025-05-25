@@ -1,5 +1,5 @@
 import { supabase } from '@/lib/supabase';
-import { MessagingConfiguration, MessagingConfigFormValues, AIConfiguration, AIConfigFormValues } from '@/types/messaging';
+import { MessagingConfiguration, MessagingConfigFormValues } from '@/types/messaging';
 import { ServiceResponse } from '@/types/common';
 
 /**
@@ -84,17 +84,7 @@ export async function createMessagingConfiguration(config: MessagingConfigFormVa
                     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
                   );
 
-                  CREATE TABLE IF NOT EXISTS ai_configurations (
-                    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-                    ai_provider TEXT NOT NULL,
-                    api_key TEXT,
-                    api_endpoint TEXT,
-                    default_prompt TEXT NOT NULL DEFAULT 'Shorten this message to 160 characters while preserving its core meaning.',
-                    character_limit INTEGER NOT NULL DEFAULT 160,
-                    is_default BOOLEAN DEFAULT FALSE,
-                    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-                    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-                  );
+
 
                   -- Enable RLS on messaging_configurations
                   ALTER TABLE IF EXISTS messaging_configurations ENABLE ROW LEVEL SECURITY;
@@ -124,33 +114,7 @@ export async function createMessagingConfiguration(config: MessagingConfigFormVa
                     TO authenticated
                     USING (true);
 
-                  -- Enable RLS on ai_configurations
-                  ALTER TABLE IF EXISTS ai_configurations ENABLE ROW LEVEL SECURITY;
 
-                  -- Create RLS policies for ai_configurations
-                  CREATE POLICY IF NOT EXISTS "Allow authenticated users to read ai_configurations"
-                    ON ai_configurations
-                    FOR SELECT
-                    TO authenticated
-                    USING (true);
-
-                  CREATE POLICY IF NOT EXISTS "Allow authenticated users to insert ai_configurations"
-                    ON ai_configurations
-                    FOR INSERT
-                    TO authenticated
-                    WITH CHECK (true);
-
-                  CREATE POLICY IF NOT EXISTS "Allow authenticated users to update ai_configurations"
-                    ON ai_configurations
-                    FOR UPDATE
-                    TO authenticated
-                    USING (true);
-
-                  CREATE POLICY IF NOT EXISTS "Allow authenticated users to delete ai_configurations"
-                    ON ai_configurations
-                    FOR DELETE
-                    TO authenticated
-                    USING (true);
                 `
               });
 
@@ -196,17 +160,7 @@ export async function createMessagingConfiguration(config: MessagingConfigFormVa
                         updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
                       );
 
-                      CREATE TABLE IF NOT EXISTS ai_configurations (
-                        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-                        ai_provider TEXT NOT NULL,
-                        api_key TEXT,
-                        api_endpoint TEXT,
-                        default_prompt TEXT NOT NULL DEFAULT 'Shorten this message to 160 characters while preserving its core meaning.',
-                        character_limit INTEGER NOT NULL DEFAULT 160,
-                        is_default BOOLEAN DEFAULT FALSE,
-                        created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-                        updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-                      );
+
 
                       -- Enable RLS on messaging_configurations
                       ALTER TABLE IF EXISTS messaging_configurations ENABLE ROW LEVEL SECURITY;
@@ -236,33 +190,7 @@ export async function createMessagingConfiguration(config: MessagingConfigFormVa
                         TO authenticated
                         USING (true);
 
-                      -- Enable RLS on ai_configurations
-                      ALTER TABLE IF EXISTS ai_configurations ENABLE ROW LEVEL SECURITY;
 
-                      -- Create RLS policies for ai_configurations
-                      CREATE POLICY IF NOT EXISTS "Allow authenticated users to read ai_configurations"
-                        ON ai_configurations
-                        FOR SELECT
-                        TO authenticated
-                        USING (true);
-
-                      CREATE POLICY IF NOT EXISTS "Allow authenticated users to insert ai_configurations"
-                        ON ai_configurations
-                        FOR INSERT
-                        TO authenticated
-                        WITH CHECK (true);
-
-                      CREATE POLICY IF NOT EXISTS "Allow authenticated users to update ai_configurations"
-                        ON ai_configurations
-                        FOR UPDATE
-                        TO authenticated
-                        USING (true);
-
-                      CREATE POLICY IF NOT EXISTS "Allow authenticated users to delete ai_configurations"
-                        ON ai_configurations
-                        FOR DELETE
-                        TO authenticated
-                        USING (true);
                     `
                   });
 
@@ -306,17 +234,7 @@ export async function createMessagingConfiguration(config: MessagingConfigFormVa
                           updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
                         );
 
-                        CREATE TABLE IF NOT EXISTS ai_configurations (
-                          id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-                          ai_provider TEXT NOT NULL,
-                          api_key TEXT,
-                          api_endpoint TEXT,
-                          default_prompt TEXT NOT NULL DEFAULT 'Shorten this message to 160 characters while preserving its core meaning.',
-                          character_limit INTEGER NOT NULL DEFAULT 160,
-                          is_default BOOLEAN DEFAULT FALSE,
-                          created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-                          updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-                        );
+
 
                         -- Enable RLS on messaging_configurations
                         ALTER TABLE IF EXISTS messaging_configurations ENABLE ROW LEVEL SECURITY;
@@ -346,33 +264,7 @@ export async function createMessagingConfiguration(config: MessagingConfigFormVa
                           TO authenticated
                           USING (true);
 
-                        -- Enable RLS on ai_configurations
-                        ALTER TABLE IF EXISTS ai_configurations ENABLE ROW LEVEL SECURITY;
 
-                        -- Create RLS policies for ai_configurations
-                        CREATE POLICY IF NOT EXISTS "Allow authenticated users to read ai_configurations"
-                          ON ai_configurations
-                          FOR SELECT
-                          TO authenticated
-                          USING (true);
-
-                        CREATE POLICY IF NOT EXISTS "Allow authenticated users to insert ai_configurations"
-                          ON ai_configurations
-                          FOR INSERT
-                          TO authenticated
-                          WITH CHECK (true);
-
-                        CREATE POLICY IF NOT EXISTS "Allow authenticated users to update ai_configurations"
-                          ON ai_configurations
-                          FOR UPDATE
-                          TO authenticated
-                          USING (true);
-
-                        CREATE POLICY IF NOT EXISTS "Allow authenticated users to delete ai_configurations"
-                          ON ai_configurations
-                          FOR DELETE
-                          TO authenticated
-                          USING (true);
                       `
                     }),
                   });

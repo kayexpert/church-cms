@@ -8,18 +8,8 @@ import { Member } from '@/types/member';
  */
 export function personalizeMessage(content: string, member: Member): string {
   if (!content || !member) {
-    console.warn('Missing content or member data for personalization');
     return content || '';
   }
-
-  console.log('Personalizing message with member data:', {
-    content,
-    memberData: {
-      name: `${member.first_name || ''} ${member.last_name || ''}`.trim(),
-      first_name: member.first_name,
-      last_name: member.last_name
-    }
-  });
 
   let personalizedContent = content;
 

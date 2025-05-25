@@ -172,7 +172,7 @@ export async function POST(request: NextRequest) {
 
     // Test the SMS provider
     logSmsTest('info', `Calling SMS provider test service [${requestId}]`);
-    const { data, error } = await testSMSProvider(testConfig, phoneNumber);
+    const { data, error } = await testSMSProvider(testConfig as any, phoneNumber);
 
     if (error) {
       logSmsTest('error', `Error from SMS provider test service [${requestId}]`);

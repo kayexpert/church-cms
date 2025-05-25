@@ -7,12 +7,12 @@ import { createClient } from '@supabase/supabase-js';
  */
 export async function GET(
   request: NextRequest,
-  context: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
     // Get the group ID from the URL params
     // In NextJS App Router, we need to await params to ensure they're properly resolved
-    const { id } = await Promise.resolve(context.params);
+    const { id } = await context.params;
     const groupId = id;
 
     console.log(`Get members for group ${groupId} endpoint called`);
@@ -189,9 +189,6 @@ export async function GET(
       m.primary_phone_number &&
       m.primary_phone_number.trim() !== ''
     ) : [];
-
-    console.log(`Found ${members ? members.length : 0} total members in group ${groupId}`);
-    console.log(`Found ${validMembers.length} valid members (active with phone numbers) in group ${groupId}`);
 
     return NextResponse.json({
       success: true,

@@ -48,39 +48,18 @@ export async function POST() {
         console.log('Successfully created messaging_configurations table');
       }
 
-      // Create the ai_configurations table
-      const { error: aiTableError } = await supabaseAdmin.rpc('exec_sql', {
-        sql_query: `
-          CREATE TABLE IF NOT EXISTS ai_configurations (
-            id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-            ai_provider TEXT NOT NULL,
-            api_key TEXT,
-            api_endpoint TEXT,
-            default_prompt TEXT NOT NULL DEFAULT 'Shorten this message to 160 characters while preserving its core meaning.',
-            character_limit INTEGER NOT NULL DEFAULT 160,
-            is_default BOOLEAN DEFAULT FALSE,
-            created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-            updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-          );
-        `
-      });
 
-      if (aiTableError) {
-        console.error('Error creating ai_configurations table:', aiTableError);
-      } else {
-        console.log('Successfully created ai_configurations table');
-      }
 
       // Check if we need to insert default configurations
-      const { data: existingConfigs, error: checkError } = await supabaseAdmin
+      const { count, error: checkError } = await supabaseAdmin
         .from('messaging_configurations')
-        .select('count(*)', { count: 'exact', head: true });
+        .select('*', { count: 'exact', head: true });
 
       if (checkError) {
         console.error('Error checking existing configurations:', checkError);
       } else {
         // If no configurations exist, insert defaults
-        if (!existingConfigs || existingConfigs.count === 0) {
+        if (!count || count === 0) {
           console.log('No existing configurations found, inserting defaults');
 
           // Insert default SMS provider configuration
@@ -97,21 +76,7 @@ export async function POST() {
             console.log('Successfully inserted default SMS provider');
           }
 
-          // Insert default AI configuration
-          const { error: insertAiError } = await supabaseAdmin
-            .from('ai_configurations')
-            .insert({
-              ai_provider: 'default',
-              default_prompt: 'Shorten this message to 160 characters while preserving its core meaning.',
-              character_limit: 160,
-              is_default: true
-            });
 
-          if (insertAiError) {
-            console.error('Error inserting default AI configuration:', insertAiError);
-          } else {
-            console.log('Successfully inserted default AI configuration');
-          }
         }
       }
     } catch (directError) {

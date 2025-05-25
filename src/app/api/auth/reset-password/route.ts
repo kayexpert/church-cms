@@ -63,7 +63,7 @@ export async function POST(request: NextRequest) {
 
     // Get client IP for rate limiting
     const ip = request.headers.get('x-forwarded-for') ||
-               request.ip ||
+               request.headers.get('x-real-ip') ||
                'unknown';
 
     // Check rate limit

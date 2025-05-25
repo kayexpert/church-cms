@@ -20,12 +20,11 @@ const supabaseAdmin = createClient(
  */
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    console.log(`Admin: PATCH /api/messaging/config/admin/${params.id} called`);
-
-    const id = params.id;
+    const { id } = await params;
+    console.log(`Admin: PATCH /api/messaging/config/admin/${id} called`);
     const body = await request.json();
 
     // Validate request body
@@ -216,12 +215,11 @@ export async function PATCH(
  */
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    console.log(`Admin: DELETE /api/messaging/config/admin/${params.id} called`);
-
-    const id = params.id;
+    const { id } = await params;
+    console.log(`Admin: DELETE /api/messaging/config/admin/${id} called`);
 
     // Check if this is the default configuration
     const { data: config, error: fetchError } = await supabaseAdmin

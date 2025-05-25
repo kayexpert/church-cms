@@ -27,8 +27,6 @@ export async function GET(request: NextRequest) {
       }, { status: 400 });
     }
 
-    console.log(`Checking if message log exists for message ${messageId} and recipient ${recipientId}`);
-
     // Check if a log already exists for this message and recipient
     const { data, error, count } = await supabase
       .from('message_logs')
@@ -46,8 +44,6 @@ export async function GET(request: NextRequest) {
     }
 
     const exists = count !== null && count > 0;
-
-    console.log(`Message log for message ${messageId} and recipient ${recipientId} ${exists ? 'exists' : 'does not exist'}`);
 
     return NextResponse.json({
       success: true,

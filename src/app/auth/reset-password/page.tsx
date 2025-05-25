@@ -3,6 +3,9 @@ import { createClient } from "@/lib/supabase-server";
 import { ResetPasswordForm } from "@/components/auth/reset-password-form";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
+// Force dynamic rendering for auth pages
+export const dynamic = 'force-dynamic';
+
 export default async function ResetPasswordPage() {
   try {
     // Check if the user is already logged in

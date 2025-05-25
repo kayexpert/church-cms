@@ -223,12 +223,12 @@ export async function POST(request: NextRequest) {
     }
 
     // Validate the SMS configuration
-    if (!smsConfig.api_key) {
-      logSmsSend('error', `SMS provider missing API key [${requestId}]`, { provider: smsConfig.provider_name });
+    if (!(smsConfig as any).api_key) {
+      logSmsSend('error', `SMS provider missing API key [${requestId}]`, { provider: (smsConfig as any).provider_name });
       return NextResponse.json(
         {
           error: 'Invalid SMS provider configuration',
-          message: `The ${smsConfig.provider_name} provider is missing an API key`,
+          message: `The ${(smsConfig as any).provider_name} provider is missing an API key`,
           details: 'Go to Settings > Messages > SMS Provider Configuration to update your SMS provider settings',
           requestId,
           timestamp: new Date().toISOString(),
@@ -238,9 +238,9 @@ export async function POST(request: NextRequest) {
     }
 
     // Validate sender ID
-    if (!smsConfig.sender_id) {
-      logSmsSend('warn', `SMS provider missing sender ID [${requestId}]`, { provider: smsConfig.provider_name });
-      console.warn(`SMS provider ${smsConfig.provider_name} is missing a sender ID. Using default 'ChurchCMS' sender ID.`);
+    if (!(smsConfig as any).sender_id) {
+      logSmsSend('warn', `SMS provider missing sender ID [${requestId}]`, { provider: (smsConfig as any).provider_name });
+      console.warn(`SMS provider ${(smsConfig as any).provider_name} is missing a sender ID. Using default 'ChurchCMS' sender ID.`);
     }
 
     // Process each recipient
@@ -318,8 +318,8 @@ export async function POST(request: NextRequest) {
             logSmsSend('info', `Sending SMS to ${phoneNumber} [${requestId}]`, {
               memberId,
               messageId,
-              provider: smsConfig.provider_name,
-              senderId: smsConfig.sender_id
+              provider: (smsConfig as any).provider_name,
+              senderId: (smsConfig as any).sender_id
             });
 
             // Get the member data for personalization
@@ -343,10 +343,10 @@ export async function POST(request: NextRequest) {
 
             // Send the SMS with personalized content
             const result = await sendSMSWithConfig(
-              smsConfig,
+              smsConfig as any,
               phoneNumber,
               personalizedContent,
-              smsConfig.sender_id
+              (smsConfig as any).sender_id
             );
 
             // Log the result

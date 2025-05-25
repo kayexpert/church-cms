@@ -1,0 +1,143 @@
+import type { NextConfig } from "next";
+
+const nextConfig: NextConfig = {
+  // Performance optimizations
+  experimental: {
+    // Enhanced package imports optimization for better tree shaking
+    optimizePackageImports: [
+      'lucide-react',
+      '@radix-ui/react-icons',
+      '@tanstack/react-query',
+      'recharts',
+      'date-fns'
+    ],
+    // Optimize CSS
+    optimizeCss: true,
+  },
+
+  // Server external packages (moved from experimental)
+  serverExternalPackages: ['sharp'],
+
+  // Update deprecated turbo config to turbopack
+  turbopack: {
+    rules: {
+      '*.svg': {
+        loaders: ['@svgr/webpack'],
+        as: '*.js',
+      },
+    },
+  },
+
+  // Enhanced compiler optimizations
+  compiler: {
+    removeConsole: process.env.NODE_ENV === 'production' ? {
+      exclude: ['error', 'warn'],
+    } : false,
+    // Enable React compiler optimizations
+    reactRemoveProperties: process.env.NODE_ENV === 'production',
+  },
+
+  // Enhanced image optimization
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: process.env.NEXT_PUBLIC_SUPABASE_URL ? new URL(process.env.NEXT_PUBLIC_SUPABASE_URL).hostname : 'localhost',
+        port: '',
+        pathname: '/**',
+      },
+    ],
+    formats: ['image/avif', 'image/webp'],
+    minimumCacheTTL: 60,
+    dangerouslyAllowSVG: true,
+    contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
+    // Add device sizes for better responsive images
+    deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
+    imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
+  },
+
+  // Enhanced webpack optimization
+  webpack: (config, { dev, isServer }) => {
+    if (!dev && !isServer) {
+      config.optimization.splitChunks = {
+        chunks: 'all',
+        cacheGroups: {
+          vendor: {
+            test: /[\\/]node_modules[\\/]/,
+            name: 'vendors',
+            chunks: 'all',
+            priority: 10,
+          },
+          common: {
+            name: 'common',
+            minChunks: 2,
+            chunks: 'all',
+            enforce: true,
+            priority: 5,
+          },
+          // Separate large libraries
+          react: {
+            test: /[\\/]node_modules[\\/](react|react-dom)[\\/]/,
+            name: 'react',
+            chunks: 'all',
+            priority: 20,
+          },
+          charts: {
+            test: /[\\/]node_modules[\\/](recharts|d3-.*)[\\/]/,
+            name: 'charts',
+            chunks: 'all',
+            priority: 15,
+          },
+        },
+      };
+    }
+    return config;
+  },
+
+  // Enable static optimization
+  output: 'standalone',
+
+  // Performance-focused headers
+  async headers() {
+    return [
+      {
+        source: '/(.*)',
+        headers: [
+          {
+            key: 'X-Content-Type-Options',
+            value: 'nosniff',
+          },
+          {
+            key: 'X-Frame-Options',
+            value: 'DENY',
+          },
+          {
+            key: 'X-XSS-Protection',
+            value: '1; mode=block',
+          },
+        ],
+      },
+      {
+        source: '/api/(.*)',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'no-store, max-age=0',
+          },
+        ],
+      },
+      // Cache static assets aggressively
+      {
+        source: '/_next/static/(.*)',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable',
+          },
+        ],
+      },
+    ];
+  },
+};
+
+export default nextConfig;

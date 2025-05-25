@@ -36,6 +36,15 @@ export const ConnectionErrorBoundary = memo(function ConnectionErrorBoundary({ c
   // Debounced health check to prevent excessive API calls
   const debouncedCheckHealth = useDebounceCallback(checkHealth, 1000, [checkHealth]);
 
+  // Define callbacks at component level (not inside useEffect)
+  const handleOnline = useCallback(() => {
+    setIsOnline(true);
+    // Check database health when we come back online (debounced)
+    debouncedCheckHealth();
+  }, [debouncedCheckHealth]);
+
+  const handleOffline = useCallback(() => setIsOnline(false), []);
+
   // First, detect if we're on the client
   useEffect(() => {
     setIsClient(true);
@@ -45,14 +54,6 @@ export const ConnectionErrorBoundary = memo(function ConnectionErrorBoundary({ c
   // Monitor online status - only run after initial client detection
   useEffect(() => {
     if (!isClient) return;
-
-    const handleOnline = useCallback(() => {
-      setIsOnline(true);
-      // Check database health when we come back online (debounced)
-      debouncedCheckHealth();
-    }, [debouncedCheckHealth]);
-
-    const handleOffline = useCallback(() => setIsOnline(false), []);
 
     window.addEventListener('online', handleOnline);
     window.addEventListener('offline', handleOffline);
@@ -64,7 +65,7 @@ export const ConnectionErrorBoundary = memo(function ConnectionErrorBoundary({ c
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
     };
-  }, [isClient, debouncedCheckHealth]);
+  }, [isClient, debouncedCheckHealth, handleOnline, handleOffline]);
 
   // Memoized retry handler
   const handleRetry = useCallback(async () => {

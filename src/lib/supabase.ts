@@ -25,11 +25,6 @@ export const supabase = createBrowserClient(
         'Content-Type': 'application/json',
       },
       fetch: (...args) => {
-        // Log the request for debugging (only in development)
-        if (process.env.NODE_ENV === 'development') {
-          console.debug('Supabase request:', args[0]);
-        }
-
         // Add timeout to fetch requests
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 second timeout

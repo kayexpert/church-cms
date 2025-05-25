@@ -84,18 +84,6 @@ BEGIN
     );
   END IF;
 
-  -- Create ai_configurations table if it doesn't exist
-  IF NOT EXISTS (SELECT FROM pg_tables WHERE schemaname = 'public' AND tablename = 'ai_configurations') THEN
-    CREATE TABLE ai_configurations (
-      id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-      ai_provider TEXT NOT NULL,
-      api_key TEXT,
-      default_prompt TEXT,
-      character_limit INTEGER DEFAULT 160,
-      is_default BOOLEAN DEFAULT false,
-      created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-      updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-    );
-  END IF;
+
 END;
 $$;
