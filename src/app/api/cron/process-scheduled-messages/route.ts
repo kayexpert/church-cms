@@ -4,12 +4,6 @@ import { sendSMSWithConfig, getDefaultSMSConfig } from '@/services/sms-service';
 import { personalizeMessage } from '@/utils/message-utils';
 import { normalizePhoneNumber, isValidPhoneNumber } from '@/utils/phone-utils';
 
-// Create a Supabase client with service role for more permissions
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL || '',
-  process.env.SUPABASE_SERVICE_ROLE_KEY || ''
-);
-
 /**
  * POST /api/cron/process-scheduled-messages
  * Process scheduled messages - to be triggered by a cron job
@@ -36,6 +30,16 @@ export async function POST(request: NextRequest) {
       console.error('Invalid or missing token for process-scheduled-messages');
       return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
     }
+
+    // Create a Supabase client with service role for more permissions
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
+    const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
+
+    if (!supabaseUrl || !supabaseServiceKey) {
+      return NextResponse.json({ error: 'Missing Supabase configuration' }, { status: 500 });
+    }
+
+    const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
 
     // Get current time and calculate 24 hours ago
     const now = new Date();
@@ -131,12 +135,12 @@ export async function POST(request: NextRequest) {
         // Process each recipient
         const recipientResults = [];
         for (const recipient of recipients) {
-          const result = await processRecipient(message, recipient);
+          const result = await processRecipient(supabaseAdmin, message, recipient);
           recipientResults.push(result);
         }
 
         // Update message schedule based on frequency
-        await updateMessageSchedule(message);
+        await updateMessageSchedule(supabaseAdmin, message);
 
         results.push({
           messageId: message.id,
@@ -180,10 +184,11 @@ export async function POST(request: NextRequest) {
 
 /**
  * Process a single recipient
+ * @param supabaseAdmin The Supabase admin client
  * @param message The message to send
  * @param recipient The recipient information
  */
-async function processRecipient(message: any, recipient: any) {
+async function processRecipient(supabaseAdmin: any, message: any, recipient: any) {
   try {
     if (recipient.recipient_type === 'individual') {
       // Get the member
@@ -198,7 +203,7 @@ async function processRecipient(message: any, recipient: any) {
         console.error(`Member ${recipient.recipient_id} not found or not active`);
 
         // Log this error
-        await createMessageLog({
+        await createMessageLog(supabaseAdmin, {
           message_id: message.id,
           recipient_id: recipient.recipient_id,
           status: 'failed',
@@ -219,7 +224,7 @@ async function processRecipient(message: any, recipient: any) {
         console.error(`Member ${member.id} (${member.first_name} ${member.last_name}) does not have a phone number`);
 
         // Log this error
-        await createMessageLog({
+        await createMessageLog(supabaseAdmin, {
           message_id: message.id,
           recipient_id: recipient.recipient_id,
           status: 'failed',
@@ -240,7 +245,7 @@ async function processRecipient(message: any, recipient: any) {
         console.error(`Error getting SMS configuration for member ${member.id}:`, configError);
 
         // Log this error
-        await createMessageLog({
+        await createMessageLog(supabaseAdmin, {
           message_id: message.id,
           recipient_id: member.id,
           status: 'failed',
@@ -260,7 +265,7 @@ async function processRecipient(message: any, recipient: any) {
           console.error(`Invalid phone number format for member ${member.id}: ${member.primary_phone_number}`);
 
           // Log failure
-          await createMessageLog({
+          await createMessageLog(supabaseAdmin, {
             message_id: message.id,
             recipient_id: member.id,
             status: 'failed',
@@ -289,7 +294,7 @@ async function processRecipient(message: any, recipient: any) {
           console.log(`Message ${message.id} already sent to member ${member.id}. Skipping to prevent duplicate.`);
 
           // Log as skipped
-          await createMessageLog({
+          await createMessageLog(supabaseAdmin, {
             message_id: message.id,
             recipient_id: member.id,
             status: 'sent',
@@ -325,7 +330,7 @@ async function processRecipient(message: any, recipient: any) {
           console.log(`Successfully sent message to member ${member.id}`);
 
           // Log success
-          await createMessageLog({
+          await createMessageLog(supabaseAdmin, {
             message_id: message.id,
             recipient_id: member.id,
             status: 'sent',
@@ -341,7 +346,7 @@ async function processRecipient(message: any, recipient: any) {
           console.error(`Error sending message to member ${member.id}:`, result.error);
 
           // Log failure
-          await createMessageLog({
+          await createMessageLog(supabaseAdmin, {
             message_id: message.id,
             recipient_id: member.id,
             status: 'failed',
@@ -358,7 +363,7 @@ async function processRecipient(message: any, recipient: any) {
         console.error(`Error sending message to member ${member.id}:`, sendError);
 
         // Log failure
-        await createMessageLog({
+        await createMessageLog(supabaseAdmin, {
           message_id: message.id,
           recipient_id: member.id,
           status: 'failed',
@@ -399,7 +404,7 @@ async function processRecipient(message: any, recipient: any) {
             console.error(`Error getting members for group ${recipient.recipient_id} using direct lookup:`, directResult.error);
 
             // Log this error
-            await createMessageLog({
+            await createMessageLog(supabaseAdmin, {
               message_id: message.id,
               recipient_id: recipient.recipient_id,
               status: 'failed',
@@ -423,7 +428,7 @@ async function processRecipient(message: any, recipient: any) {
         console.error(`Exception getting members for group ${recipient.recipient_id}:`, error);
 
         // Log this error
-        await createMessageLog({
+        await createMessageLog(supabaseAdmin, {
           message_id: message.id,
           recipient_id: recipient.recipient_id,
           status: 'failed',
@@ -441,7 +446,7 @@ async function processRecipient(message: any, recipient: any) {
         console.error(`No members found for group ${recipient.recipient_id} after all attempts`);
 
         // Log this error
-        await createMessageLog({
+        await createMessageLog(supabaseAdmin, {
           message_id: message.id,
           recipient_id: recipient.recipient_id,
           status: 'failed',
@@ -469,7 +474,7 @@ async function processRecipient(message: any, recipient: any) {
         console.error(`Error getting member details for group ${recipient.recipient_id}:`, membersError);
 
         // Log this error
-        await createMessageLog({
+        await createMessageLog(supabaseAdmin, {
           message_id: message.id,
           recipient_id: recipient.recipient_id,
           status: 'failed',
@@ -490,7 +495,7 @@ async function processRecipient(message: any, recipient: any) {
         console.error(`No members with phone numbers found in group ${recipient.recipient_id}`);
 
         // Log this error
-        await createMessageLog({
+        await createMessageLog(supabaseAdmin, {
           message_id: message.id,
           recipient_id: recipient.recipient_id,
           status: 'failed',
@@ -511,7 +516,7 @@ async function processRecipient(message: any, recipient: any) {
         console.error(`Error getting SMS configuration for group ${recipient.recipient_id}:`, configError);
 
         // Log this error
-        await createMessageLog({
+        await createMessageLog(supabaseAdmin, {
           message_id: message.id,
           recipient_id: recipient.recipient_id,
           status: 'failed',
@@ -537,7 +542,7 @@ async function processRecipient(message: any, recipient: any) {
             console.error(`Invalid phone number format for member ${member.id}: ${member.primary_phone_number}`);
 
             // Log failure
-            await createMessageLog({
+            await createMessageLog(supabaseAdmin, {
               message_id: message.id,
               recipient_id: member.id,
               status: 'failed',
@@ -569,7 +574,7 @@ async function processRecipient(message: any, recipient: any) {
             console.log(`Message ${message.id} already sent to member ${member.id}. Skipping to prevent duplicate.`);
 
             // Log as skipped
-            await createMessageLog({
+            await createMessageLog(supabaseAdmin, {
               message_id: message.id,
               recipient_id: member.id,
               status: 'sent',
@@ -603,7 +608,7 @@ async function processRecipient(message: any, recipient: any) {
             console.log(`Successfully sent message to member ${member.id} in group ${recipient.recipient_id}`);
 
             // Log success
-            await createMessageLog({
+            await createMessageLog(supabaseAdmin, {
               message_id: message.id,
               recipient_id: member.id,
               status: 'sent',
@@ -621,7 +626,7 @@ async function processRecipient(message: any, recipient: any) {
             console.error(`Error sending message to member ${member.id} in group ${recipient.recipient_id}:`, result.error);
 
             // Log failure
-            await createMessageLog({
+            await createMessageLog(supabaseAdmin, {
               message_id: message.id,
               recipient_id: member.id,
               status: 'failed',
@@ -640,7 +645,7 @@ async function processRecipient(message: any, recipient: any) {
           console.error(`Error sending message to member ${member.id} in group ${recipient.recipient_id}:`, sendError);
 
           // Log failure
-          await createMessageLog({
+          await createMessageLog(supabaseAdmin, {
             message_id: message.id,
             recipient_id: member.id,
             status: 'failed',
@@ -679,7 +684,7 @@ async function processRecipient(message: any, recipient: any) {
     console.error(`Error processing recipient ${recipient.id}:`, error);
 
     // Create a generic error log
-    await createMessageLog({
+    await createMessageLog(supabaseAdmin, {
       message_id: message.id,
       recipient_id: recipient.recipient_id,
       status: 'failed',
@@ -696,9 +701,10 @@ async function processRecipient(message: any, recipient: any) {
 
 /**
  * Update the message schedule based on frequency
+ * @param supabaseAdmin The Supabase admin client
  * @param message The message to update
  */
-async function updateMessageSchedule(message: any) {
+async function updateMessageSchedule(supabaseAdmin: any, message: any) {
   try {
     // Calculate the next schedule time based on frequency
     const nextScheduleTime = calculateNextScheduleTime(message);
@@ -798,9 +804,10 @@ function calculateNextScheduleTime(message: any): Date | null {
 
 /**
  * Create a message log entry
+ * @param supabaseAdmin The Supabase admin client
  * @param log The log entry to create
  */
-async function createMessageLog(log: any) {
+async function createMessageLog(supabaseAdmin: any, log: any) {
   try {
     // Validate required fields
     if (!log.message_id) {
