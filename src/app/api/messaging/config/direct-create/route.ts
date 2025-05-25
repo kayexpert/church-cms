@@ -93,33 +93,7 @@ export async function POST(request: NextRequest) {
           TO authenticated
           USING (true);
 
-        -- Enable RLS on ai_configurations
-        ALTER TABLE IF EXISTS ai_configurations ENABLE ROW LEVEL SECURITY;
 
-        -- Create RLS policies for ai_configurations
-        CREATE POLICY IF NOT EXISTS "Allow authenticated users to read ai_configurations"
-          ON ai_configurations
-          FOR SELECT
-          TO authenticated
-          USING (true);
-
-        CREATE POLICY IF NOT EXISTS "Allow authenticated users to insert ai_configurations"
-          ON ai_configurations
-          FOR INSERT
-          TO authenticated
-          WITH CHECK (true);
-
-        CREATE POLICY IF NOT EXISTS "Allow authenticated users to update ai_configurations"
-          ON ai_configurations
-          FOR UPDATE
-          TO authenticated
-          USING (true);
-
-        CREATE POLICY IF NOT EXISTS "Allow authenticated users to delete ai_configurations"
-          ON ai_configurations
-          FOR DELETE
-          TO authenticated
-          USING (true);
       `;
 
       // Execute the SQL directly using the REST API

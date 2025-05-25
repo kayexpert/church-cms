@@ -135,26 +135,14 @@ export async function POST(request: NextRequest) {
                     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
                   );
 
-                  CREATE TABLE IF NOT EXISTS ai_configurations (
-                    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-                    ai_provider TEXT NOT NULL,
-                    api_key TEXT,
-                    api_endpoint TEXT,
-                    default_prompt TEXT NOT NULL DEFAULT 'Shorten this message to 160 characters while preserving its core meaning.',
-                    character_limit INTEGER NOT NULL DEFAULT 160,
-                    is_default BOOLEAN DEFAULT FALSE,
-                    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-                    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-                  );
+
 
                   -- Insert default records if they don't exist
                   INSERT INTO messaging_configurations (provider_name, is_default)
                   SELECT 'mock', TRUE
                   WHERE NOT EXISTS (SELECT 1 FROM messaging_configurations WHERE is_default = TRUE);
 
-                  INSERT INTO ai_configurations (ai_provider, default_prompt, character_limit, is_default)
-                  SELECT 'default', 'Shorten this message to 160 characters while preserving its core meaning.', 160, TRUE
-                  WHERE NOT EXISTS (SELECT 1 FROM ai_configurations WHERE is_default = TRUE);
+
 
                   -- Enable RLS on messaging_configurations
                   ALTER TABLE IF EXISTS messaging_configurations ENABLE ROW LEVEL SECURITY;
@@ -184,33 +172,7 @@ export async function POST(request: NextRequest) {
                     TO authenticated
                     USING (true);
 
-                  -- Enable RLS on ai_configurations
-                  ALTER TABLE IF EXISTS ai_configurations ENABLE ROW LEVEL SECURITY;
 
-                  -- Create RLS policies for ai_configurations
-                  CREATE POLICY IF NOT EXISTS "Allow authenticated users to read ai_configurations"
-                    ON ai_configurations
-                    FOR SELECT
-                    TO authenticated
-                    USING (true);
-
-                  CREATE POLICY IF NOT EXISTS "Allow authenticated users to insert ai_configurations"
-                    ON ai_configurations
-                    FOR INSERT
-                    TO authenticated
-                    WITH CHECK (true);
-
-                  CREATE POLICY IF NOT EXISTS "Allow authenticated users to update ai_configurations"
-                    ON ai_configurations
-                    FOR UPDATE
-                    TO authenticated
-                    USING (true);
-
-                  CREATE POLICY IF NOT EXISTS "Allow authenticated users to delete ai_configurations"
-                    ON ai_configurations
-                    FOR DELETE
-                    TO authenticated
-                    USING (true);
                 `
               })
             });
