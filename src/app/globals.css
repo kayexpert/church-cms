@@ -1,0 +1,390 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-nunito);
+  --font-heading: var(--font-lato);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+
+  /* Animation durations */
+  --animate-tabHighlight: tabHighlight 0.3s ease-in-out;
+}
+
+/* Base theme variables with smooth transitions */
+:root {
+  /* Set transition for theme changes - applied to all theme variables */
+  transition:
+    background-color 0.2s ease-in-out,
+    color 0.2s ease-in-out,
+    border-color 0.2s ease-in-out,
+    box-shadow 0.2s ease-in-out;
+
+  /* Ensure theme transitions are smooth */
+  --theme-transition-duration: 0.2s;
+  --theme-transition-timing: ease-in-out;
+
+  /* Default to light theme variables to prevent flash */
+  color-scheme: light;
+
+  /* Light theme variables (default) */
+  --radius: 0.625rem;
+  --background: #ffffff;
+  --foreground: #0f172a;
+  --card: #ffffff;
+  --card-foreground: #0f172a;
+  --popover: #ffffff;
+  --popover-foreground: #0f172a;
+  --primary: #4CAF50;
+  --primary-foreground: #ffffff;
+  --secondary: #f1f5f9;
+  --secondary-foreground: #0f172a;
+  --muted: #f1f5f9;
+  --muted-foreground: #64748b;
+  --accent: #f1f5f9;
+  --accent-foreground: #0f172a;
+  --destructive: #ef4444;
+  --destructive-foreground: #ffffff;
+  --border: #e2e8f0;
+  --input: #e2e8f0;
+  --ring: #94a3b8;
+  --chart-1: #4CAF50;
+  --chart-2: #3b82f6;
+  --chart-3: #8b5cf6;
+  --chart-4: #f59e0b;
+  --chart-5: #e11d48;
+  --sidebar: #ffffff;
+  --sidebar-foreground: #0f172a;
+  --sidebar-primary: #4CAF50;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #f1f5f9;
+  --sidebar-accent-foreground: #0f172a;
+  --sidebar-border: #e2e8f0;
+  --sidebar-ring: #94a3b8;
+}
+
+.dark {
+  color-scheme: dark;
+  /* Much lighter background - significantly lighter than before */
+  --background: #1a2236;
+  --foreground: #f8fafc;
+  /* Lighter card background */
+  --card: #243044;
+  --card-foreground: #f8fafc;
+  /* Lighter popover background */
+  --popover: #243044;
+  --popover-foreground: #f8fafc;
+  /* Vibrant primary color for better visibility */
+  --primary: #22c55e;
+  --primary-foreground: #f8fafc;
+  /* Lighter secondary background */
+  --secondary: #334155;
+  --secondary-foreground: #f8fafc;
+  /* Lighter muted background */
+  --muted: #334155;
+  --muted-foreground: #b4c6e0;
+  /* Lighter accent background */
+  --accent: #334155;
+  --accent-foreground: #f8fafc;
+  --destructive: #ef4444;
+  --destructive-foreground: #f8fafc;
+  /* More visible borders */
+  --border: rgba(255, 255, 255, 0.2);
+  --input: rgba(255, 255, 255, 0.25);
+  --ring: #8ca3c7;
+  /* Brighter chart colors for better visibility */
+  --chart-1: #22c55e;
+  --chart-2: #3b82f6;
+  --chart-3: #8b5cf6;
+  --chart-4: #f59e0b;
+  --chart-5: #e11d48;
+  /* Much lighter sidebar background */
+  --sidebar: #2c3b52;
+  --sidebar-foreground: #f8fafc;
+  /* Brighter sidebar primary color */
+  --sidebar-primary: #22c55e;
+  --sidebar-primary-foreground: #f8fafc;
+  /* Lighter sidebar accent */
+  --sidebar-accent: #3a4a63;
+  --sidebar-accent-foreground: #f8fafc;
+  /* More visible sidebar border */
+  --sidebar-border: rgba(255, 255, 255, 0.2);
+  --sidebar-ring: #8ca3c7;
+}
+
+@layer base {
+  * {
+    @apply border-border;
+    font-family: var(--font-nunito);
+  }
+  body {
+    @apply bg-background text-foreground;
+    /* Add smooth transitions for theme changes */
+    transition:
+      background-color var(--theme-transition-duration) var(--theme-transition-timing),
+      color var(--theme-transition-duration) var(--theme-transition-timing);
+    font-family: var(--font-nunito);
+
+    /* Ensure content is visible once theme is initialized */
+    html.theme-initialized & {
+      visibility: visible;
+    }
+    overflow: hidden;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-lato);
+  }
+
+  /* Apply transitions to common UI elements */
+  .card,
+  .dialog,
+  .popover,
+  .dropdown-menu,
+  .sidebar,
+  .button,
+  .input,
+  .select,
+  .badge,
+  .avatar,
+  .tab {
+    transition:
+      background-color var(--theme-transition-duration) var(--theme-transition-timing),
+      color var(--theme-transition-duration) var(--theme-transition-timing),
+      border-color var(--theme-transition-duration) var(--theme-transition-timing),
+      box-shadow var(--theme-transition-duration) var(--theme-transition-timing);
+  }
+
+  /* Remove focus outlines throughout the project */
+  *:focus {
+    outline: none !important;
+    box-shadow: none !important;
+  }
+
+  /* Remove focus ring styles */
+  .focus-visible\:ring-\[3px\],
+  .focus-visible\:border-ring,
+  .focus-visible\:ring-ring\/50 {
+    @apply focus-visible:ring-0 focus-visible:border-input;
+  }
+
+  /* Disable transitions during theme changes */
+  .no-transitions * {
+    transition: none !important;
+  }
+
+  /* Tab animation */
+  @keyframes tabHighlight {
+    from {
+      width: 0;
+      opacity: 0;
+    }
+    to {
+      width: 100%;
+      opacity: 1;
+    }
+  }
+
+  /* Modern scrollbar styling */
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+    border-radius: 10px;
+    margin: 4px;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: color-mix(in srgb, var(--primary) 60%, transparent);
+    border-radius: 10px;
+    border: 2px solid transparent;
+    background-clip: padding-box;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--primary);
+    border: 2px solid transparent;
+    background-clip: padding-box;
+  }
+
+  /* Firefox scrollbar */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--primary) transparent;
+  }
+
+  /* Edge and IE */
+  *::-ms-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+
+  *::-ms-scrollbar-track {
+    background: transparent;
+  }
+
+  *::-ms-scrollbar-thumb {
+    background-color: var(--primary);
+    border-radius: 10px;
+  }
+
+  /* Custom scrollbar for specific containers */
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+    border-radius: 10px;
+    margin: 2px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: color-mix(in srgb, var(--primary) 60%, transparent);
+    border-radius: 10px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: var(--primary);
+  }
+
+  /* Firefox */
+  .custom-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: var(--primary) transparent;
+  }
+
+  /* Custom date input styling */
+  input[type="date"] {
+    position: relative;
+  }
+
+  /* Hide the default calendar icon in Webkit browsers */
+  input[type="date"]::-webkit-calendar-picker-indicator {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+  }
+
+  /* Global hover effects for clickable elements */
+  a:not(.no-hover),
+  button:not(.no-hover),
+  [role="button"]:not(.no-hover),
+  .clickable {
+    cursor: pointer;
+  }
+
+  /* Hover effect for links that don't have their own hover styles */
+  a:not([class*="hover"]):not(.no-hover):hover {
+    color: var(--primary);
+    text-decoration: underline;
+  }
+
+  /* Hover effect for clickable cards */
+  .card.clickable {
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+  }
+
+  .card.clickable:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    border-color: var(--primary);
+  }
+
+  /* Hover effect for table rows */
+  tr.clickable:hover {
+    background-color: color-mix(in srgb, var(--primary) 10%, transparent);
+    cursor: pointer;
+  }
+
+  /* Hover effect for any element with clickable class */
+  .clickable:hover {
+    opacity: 0.9;
+  }
+
+  /* Hide scrollbars but keep functionality */
+  .hide-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .hide-scrollbar {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+  }
+
+  /* Member status buttons styling */
+  .member-status-active-btn.bg-green-600 {
+    background-color: #22c55e !important;
+    color: white !important;
+    border: none !important;
+  }
+
+  .member-status-active-btn:hover {
+    background-color: #16a34a !important;
+  }
+
+  .member-status-inactive-btn.bg-red-600 {
+    background-color: #ef4444 !important;
+    color: white !important;
+    border: none !important;
+  }
+
+  .member-status-inactive-btn:hover {
+    background-color: #dc2626 !important;
+  }
+
+  .member-status-inactive-btn.bg-gray-800,
+  .member-status-active-btn.bg-gray-800 {
+    background-color: #1f2937 !important;
+    color: #9ca3af !important;
+    border-color: #4b5563 !important;
+  }
+
+  .member-status-inactive-btn.bg-gray-800:hover,
+  .member-status-active-btn.bg-gray-800:hover {
+    background-color: #374151 !important;
+  }
+}

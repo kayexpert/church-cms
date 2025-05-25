@@ -1,0 +1,19 @@
+{
+  "crons": [
+    {
+      "path": "/api/cron/process-scheduled-messages",
+      "schedule": "*/5 * * * *",
+      "headers": {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer ${CRON_SECRET_KEY}"
+      }
+    },
+    {
+      "path": "/api/cron/process-birthday-messages",
+      "schedule": "0 0 * * *",
+      "headers": {
+        "Authorization": "Bearer ${CRON_SECRET_KEY}"
+      }
+    }
+  ]
+}

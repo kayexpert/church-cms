@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Font Test</title>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Nunito', sans-serif;
+      line-height: 1.6;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    h1 {
+      font-family: 'Nunito', sans-serif;
+      font-weight: 700;
+    }
+    p {
+      font-family: 'Nunito', sans-serif;
+      font-weight: 400;
+    }
+    .sample {
+      margin-bottom: 30px;
+      padding: 20px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+    }
+    .weight-400 { font-weight: 400; }
+    .weight-500 { font-weight: 500; }
+    .weight-600 { font-weight: 600; }
+    .weight-700 { font-weight: 700; }
+  </style>
+</head>
+<body>
+  <h1>Nunito Font Test</h1>
+  
+  <div class="sample">
+    <h2>Font Weight: 400 (Regular)</h2>
+    <p class="weight-400">
+      This text is displayed in Nunito with font-weight: 400. 
+      The quick brown fox jumps over the lazy dog.
+    </p>
+  </div>
+  
+  <div class="sample">
+    <h2>Font Weight: 500 (Medium)</h2>
+    <p class="weight-500">
+      This text is displayed in Nunito with font-weight: 500. 
+      The quick brown fox jumps over the lazy dog.
+    </p>
+  </div>
+  
+  <div class="sample">
+    <h2>Font Weight: 600 (Semi-Bold)</h2>
+    <p class="weight-600">
+      This text is displayed in Nunito with font-weight: 600. 
+      The quick brown fox jumps over the lazy dog.
+    </p>
+  </div>
+  
+  <div class="sample">
+    <h2>Font Weight: 700 (Bold)</h2>
+    <p class="weight-700">
+      This text is displayed in Nunito with font-weight: 700. 
+      The quick brown fox jumps over the lazy dog.
+    </p>
+  </div>
+  
+  <p>
+    If you can see this text in Nunito font, the font is loaded correctly.
+    Compare with the system default font below:
+  </p>
+  
+  <div class="sample" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
+    <h2>System Default Font</h2>
+    <p>
+      This text is displayed in the system default font.
+      The quick brown fox jumps over the lazy dog.
+    </p>
+  </div>
+</body>
+</html>

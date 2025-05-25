@@ -1,0 +1,40 @@
+/* Hide member ID that appears below the member name */
+.member-id-hidden {
+  display: none !important;
+}
+
+/* Target any element that might contain the member ID */
+[id*="member-id"],
+[class*="member-id"],
+div > p:nth-child(2):not([class]) {
+  display: none !important;
+}
+
+/* Add specific style to hide the member ID */
+.text-center > div > p:nth-of-type(2) {
+  display: none !important;
+}
+
+/* Hide any paragraph that might be displaying the ID */
+h3 + p:not([class*="text-muted-foreground"]) {
+  display: none !important;
+}
+
+/* Hide any element that might be displaying the ID */
+[data-member-id] {
+  display: none !important;
+}
+
+/* Target the specific structure in the member details dialog */
+.flex-col.items-center.text-center > div > div > h3 + p {
+  display: none !important;
+}
+
+/* Target any paragraph that contains a UUID pattern */
+p[id*="9277003a"],
+p[id*="3d45-4ce8"],
+p[id*="8fff-598"],
+p[id*="7bd4-4c95"],
+p[id*="d13c15668"] {
+  display: none !important;
+}
