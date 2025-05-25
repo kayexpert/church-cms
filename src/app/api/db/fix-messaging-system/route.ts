@@ -3,12 +3,6 @@ import { createClient } from '@supabase/supabase-js';
 import fs from 'fs';
 import path from 'path';
 
-// Create a Supabase client with admin privileges
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL || '',
-  process.env.SUPABASE_SERVICE_ROLE_KEY || ''
-);
-
 /**
  * POST /api/db/fix-messaging-system
  * Runs the comprehensive fix script for the messaging system
@@ -16,6 +10,16 @@ const supabaseAdmin = createClient(
 export async function POST(request: NextRequest) {
   try {
     console.log('Starting messaging system fix...');
+
+    // Create a Supabase client with admin privileges
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
+    const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
+
+    if (!supabaseUrl || !supabaseServiceKey) {
+      return NextResponse.json({ error: 'Missing Supabase configuration' }, { status: 500 });
+    }
+
+    const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
 
     // Read the migration file
     const migrationPath = path.join(process.cwd(), 'src', 'db', 'migrations', 'fix_messaging_system.sql');
@@ -40,7 +44,7 @@ export async function POST(request: NextRequest) {
       const stuckMessagesResponse = await fetch(`${process.env.NEXT_PUBLIC_APP_URL || ''}/api/messaging/fix-stuck-messages`, {
         method: 'POST'
       });
-      
+
       if (!stuckMessagesResponse.ok) {
         console.warn('Failed to fix stuck messages, but database fix was successful');
       } else {

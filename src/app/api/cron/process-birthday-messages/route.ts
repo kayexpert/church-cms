@@ -5,12 +5,6 @@ import { personalizeMessage } from '@/utils/message-utils';
 import { normalizePhoneNumber, isValidPhoneNumber } from '@/utils/phone-utils';
 import { hasBirthdayMessageBeenSent } from '@/utils/db-message-deduplication';
 
-// Create a Supabase client with service role for more permissions
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL || '',
-  process.env.SUPABASE_SERVICE_ROLE_KEY || ''
-);
-
 /**
  * POST /api/cron/process-birthday-messages
  * Process birthday messages - to be triggered by a daily cron job
@@ -37,6 +31,16 @@ export async function POST(request: NextRequest) {
       console.error('Invalid or missing token for process-birthday-messages');
       return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
     }
+
+    // Create a Supabase client with service role for more permissions
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
+    const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
+
+    if (!supabaseUrl || !supabaseServiceKey) {
+      return NextResponse.json({ error: 'Missing Supabase configuration' }, { status: 500 });
+    }
+
+    const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
 
     // Get current date
     const now = new Date();
@@ -209,7 +213,7 @@ export async function POST(request: NextRequest) {
               console.log(`Successfully sent birthday message to member ${member.id}`);
 
               // Log success
-              await createMessageLog({
+              await createMessageLog(supabaseAdmin, {
                 message_id: message.id,
                 recipient_id: member.id,
                 status: 'sent',
@@ -228,7 +232,7 @@ export async function POST(request: NextRequest) {
               console.error(`Error sending birthday message to member ${member.id}:`, result.error);
 
               // Log failure
-              await createMessageLog({
+              await createMessageLog(supabaseAdmin, {
                 message_id: message.id,
                 recipient_id: member.id,
                 status: 'failed',
@@ -248,7 +252,7 @@ export async function POST(request: NextRequest) {
             console.error(`Error sending birthday message to member ${member.id}:`, sendError);
 
             // Log failure
-            await createMessageLog({
+            await createMessageLog(supabaseAdmin, {
               message_id: message.id,
               recipient_id: member.id,
               status: 'failed',
@@ -303,9 +307,10 @@ export async function POST(request: NextRequest) {
 
 /**
  * Create a message log entry
+ * @param supabaseAdmin The Supabase admin client
  * @param log The log entry to create
  */
-async function createMessageLog(log: any) {
+async function createMessageLog(supabaseAdmin: any, log: any) {
   try {
     // Validate required fields
     if (!log.message_id) {
