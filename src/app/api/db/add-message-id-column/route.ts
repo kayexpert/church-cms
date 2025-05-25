@@ -12,10 +12,14 @@ export async function POST(request: NextRequest) {
     console.log('Add message_id_from_provider column endpoint called');
 
     // Create a Supabase client with service role for admin operations
-    const supabaseAdmin = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL || '',
-      process.env.SUPABASE_SERVICE_ROLE_KEY || ''
-    );
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
+    const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
+
+    if (!supabaseUrl || !supabaseServiceKey) {
+      return NextResponse.json({ error: 'Missing Supabase configuration' }, { status: 500 });
+    }
+
+    const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
 
     // Read the SQL migration file
     const migrationPath = path.join(process.cwd(), 'src', 'db', 'migrations', 'add_message_id_from_provider_column.sql');

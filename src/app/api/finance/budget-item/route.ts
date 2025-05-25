@@ -2,19 +2,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { z } from 'zod';
 
-// Create a Supabase client with service role key for admin operations
-// This ensures we have proper permissions to access the database
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL || '',
-  process.env.SUPABASE_SERVICE_ROLE_KEY || '',
-  {
-    auth: {
-      autoRefreshToken: false,
-      persistSession: false
-    }
-  }
-);
-
 // Define the schema for budget item creation
 const budgetItemSchema = z.object({
   budget_id: z.string(),
@@ -30,6 +17,22 @@ const budgetItemSchema = z.object({
  */
 export async function POST(request: NextRequest) {
   try {
+    // Create a Supabase client with service role key for admin operations
+    // This ensures we have proper permissions to access the database
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
+    const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
+
+    if (!supabaseUrl || !supabaseServiceKey) {
+      return NextResponse.json({ error: 'Missing Supabase configuration' }, { status: 500 });
+    }
+
+    const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey, {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false
+      }
+    });
+
     const body = await request.json();
 
     // Validate request body

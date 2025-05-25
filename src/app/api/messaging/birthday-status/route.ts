@@ -1,12 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 
-// Create a Supabase client with service role for more permissions
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL || '',
-  process.env.SUPABASE_SERVICE_ROLE_KEY || ''
-);
-
 /**
  * GET /api/messaging/birthday-status
  * Check if there are any birthday messages that need to be processed today
@@ -14,6 +8,16 @@ const supabaseAdmin = createClient(
 export async function GET() {
   try {
     console.log('Birthday status check endpoint called');
+
+    // Create a Supabase client with service role for more permissions
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
+    const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
+
+    if (!supabaseUrl || !supabaseServiceKey) {
+      return NextResponse.json({ error: 'Missing Supabase configuration' }, { status: 500 });
+    }
+
+    const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
 
     // Get current date
     const now = new Date();
