@@ -1,12 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 
-// Create a Supabase client with service role for more permissions
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL || '',
-  process.env.SUPABASE_SERVICE_ROLE_KEY || ''
-);
-
 /**
  * POST /api/messaging/check-stuck-messages
  * Check for messages that are stuck in 'processing' state and fix them
@@ -15,12 +9,22 @@ export async function POST(request: NextRequest) {
   try {
     console.log('Check stuck messages endpoint called');
 
+    // Create a Supabase client with service role for more permissions
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
+    const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
+
+    if (!supabaseUrl || !supabaseServiceKey) {
+      return NextResponse.json({ error: 'Missing Supabase configuration' }, { status: 500 });
+    }
+
+    const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
+
     // Get current time
     const now = new Date();
-    
+
     // Calculate a time threshold (10 minutes ago)
     const tenMinutesAgo = new Date(now.getTime() - 10 * 60 * 1000);
-    
+
     // Find messages that are stuck in 'processing' state
     const { data: stuckMessages, error } = await supabaseAdmin
       .from('messages')
@@ -59,7 +63,7 @@ export async function POST(request: NextRequest) {
 
         // Determine the appropriate status based on message frequency
         let newStatus = 'scheduled';
-        
+
         if (message.frequency === 'one-time') {
           // For one-time messages, check if they've been sent
           const { data: logs, error: logsError } = await supabaseAdmin
@@ -68,11 +72,11 @@ export async function POST(request: NextRequest) {
             .eq('message_id', message.id)
             .eq('status', 'sent')
             .limit(1);
-            
+
           if (logsError) {
             console.error(`Error checking logs for message ${message.id}:`, logsError);
           }
-          
+
           // If the message has been sent, mark it as completed
           if (logs && logs.length > 0) {
             newStatus = 'completed';
