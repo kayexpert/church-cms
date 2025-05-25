@@ -3,18 +3,6 @@ import { messagingConfigSchema } from '@/schemas/messaging-config-schema';
 import { createClient } from '@supabase/supabase-js';
 import { MessagingConfiguration } from '@/types/messaging';
 
-// Create a Supabase client with service role to bypass RLS
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL || '',
-  process.env.SUPABASE_SERVICE_ROLE_KEY || '',
-  {
-    auth: {
-      autoRefreshToken: false,
-      persistSession: false
-    }
-  }
-);
-
 /**
  * GET /api/messaging/config/admin
  * Get all SMS provider configurations (bypassing RLS)
@@ -22,6 +10,26 @@ const supabaseAdmin = createClient(
 export async function GET() {
   try {
     console.log('Admin: Fetching all messaging configurations');
+
+    // Validate environment variables
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+    if (!supabaseUrl || !supabaseServiceKey) {
+      console.error('Missing Supabase configuration');
+      return NextResponse.json(
+        { error: 'Server configuration error' },
+        { status: 500 }
+      );
+    }
+
+    // Create a Supabase client with service role to bypass RLS
+    const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey, {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false
+      }
+    });
 
     const { data, error } = await supabaseAdmin
       .from('messaging_configurations')
@@ -56,6 +64,26 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     console.log('Admin: POST /api/messaging/config/admin called');
+
+    // Validate environment variables
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+    if (!supabaseUrl || !supabaseServiceKey) {
+      console.error('Missing Supabase configuration');
+      return NextResponse.json(
+        { error: 'Server configuration error' },
+        { status: 500 }
+      );
+    }
+
+    // Create a Supabase client with service role to bypass RLS
+    const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey, {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false
+      }
+    });
 
     // Parse request body
     let body;

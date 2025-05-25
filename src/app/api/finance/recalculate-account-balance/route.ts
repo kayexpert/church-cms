@@ -2,13 +2,6 @@ import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 import { createClient } from "@supabase/supabase-js";
 
-// Create a Supabase client with the service role key for admin operations
-// This bypasses RLS policies
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL || '',
-  process.env.SUPABASE_SERVICE_ROLE_KEY || ''
-);
-
 /**
  * API route to recalculate an account's balance
  * POST /api/finance/recalculate-account-balance
@@ -18,6 +11,30 @@ const supabaseAdmin = createClient(
  */
 export async function POST(request: Request) {
   try {
+    // Validate environment variables
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+    if (!supabaseUrl || !supabaseServiceKey) {
+      console.error("Missing Supabase configuration:", {
+        url: supabaseUrl ? 'Set' : 'Missing',
+        serviceKey: supabaseServiceKey ? 'Set' : 'Missing'
+      });
+      return NextResponse.json(
+        { success: false, message: "Server configuration error" },
+        { status: 500 }
+      );
+    }
+
+    // Create a Supabase client with the service role key for admin operations
+    // This bypasses RLS policies
+    const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey, {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false
+      }
+    });
+
     // Parse the request body
     const body = await request.json();
     const { accountId } = body;

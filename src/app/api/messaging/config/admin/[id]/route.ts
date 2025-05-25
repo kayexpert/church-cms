@@ -2,18 +2,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { messagingConfigSchema } from '@/schemas/messaging-config-schema';
 import { createClient } from '@supabase/supabase-js';
 
-// Create a Supabase client with service role to bypass RLS
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL || '',
-  process.env.SUPABASE_SERVICE_ROLE_KEY || '',
-  {
-    auth: {
-      autoRefreshToken: false,
-      persistSession: false
-    }
-  }
-);
-
 /**
  * PATCH /api/messaging/config/admin/[id]
  * Update an SMS provider configuration (bypassing RLS)
@@ -25,6 +13,27 @@ export async function PATCH(
   try {
     const { id } = await params;
     console.log(`Admin: PATCH /api/messaging/config/admin/${id} called`);
+
+    // Validate environment variables
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+    if (!supabaseUrl || !supabaseServiceKey) {
+      console.error('Missing Supabase configuration');
+      return NextResponse.json(
+        { error: 'Server configuration error' },
+        { status: 500 }
+      );
+    }
+
+    // Create a Supabase client with service role to bypass RLS
+    const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey, {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false
+      }
+    });
+
     const body = await request.json();
 
     // Validate request body
@@ -220,6 +229,26 @@ export async function DELETE(
   try {
     const { id } = await params;
     console.log(`Admin: DELETE /api/messaging/config/admin/${id} called`);
+
+    // Validate environment variables
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+    if (!supabaseUrl || !supabaseServiceKey) {
+      console.error('Missing Supabase configuration');
+      return NextResponse.json(
+        { error: 'Server configuration error' },
+        { status: 500 }
+      );
+    }
+
+    // Create a Supabase client with service role to bypass RLS
+    const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey, {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false
+      }
+    });
 
     // Check if this is the default configuration
     const { data: config, error: fetchError } = await supabaseAdmin
