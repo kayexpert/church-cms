@@ -3,12 +3,6 @@ import { createClient } from '@supabase/supabase-js';
 import fs from 'fs';
 import path from 'path';
 
-// Create a Supabase client with service role for more permissions
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL || '',
-  process.env.SUPABASE_SERVICE_ROLE_KEY || ''
-);
-
 /**
  * POST /api/db/update-message-logs-table
  * Runs the migration to update the message_logs table
@@ -16,6 +10,16 @@ const supabaseAdmin = createClient(
 export async function POST(request: NextRequest) {
   try {
     console.log('Starting message_logs table update...');
+
+    // Create a Supabase client with service role for more permissions
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
+    const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
+
+    if (!supabaseUrl || !supabaseServiceKey) {
+      return NextResponse.json({ error: 'Missing Supabase configuration' }, { status: 500 });
+    }
+
+    const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
 
     // Read the migration file
     const migrationPath = path.join(process.cwd(), 'src', 'db', 'migrations', 'update_message_logs_table.sql');

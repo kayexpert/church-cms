@@ -27,10 +27,14 @@ export async function POST() {
     const sql = fs.readFileSync(filePath, 'utf8');
 
     // Create a Supabase client with service role to execute SQL
-    const supabaseAdmin = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL || '',
-      process.env.SUPABASE_SERVICE_ROLE_KEY || ''
-    );
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
+    const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
+
+    if (!supabaseUrl || !supabaseServiceKey) {
+      return NextResponse.json({ error: 'Missing Supabase configuration' }, { status: 500 });
+    }
+
+    const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
 
     // First try to create the exec_sql function directly
     try {

@@ -10,10 +10,14 @@ export async function POST() {
     console.log('Creating exec_sql function');
 
     // Create a Supabase client with service role to execute SQL
-    const supabaseAdmin = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL || '',
-      process.env.SUPABASE_SERVICE_ROLE_KEY || ''
-    );
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
+    const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
+
+    if (!supabaseUrl || !supabaseServiceKey) {
+      return NextResponse.json({ error: 'Missing Supabase configuration' }, { status: 500 });
+    }
+
+    const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
 
     // We'll assume the function doesn't exist and try to create it directly
     // This is a simpler approach that avoids trying to check if it exists first
