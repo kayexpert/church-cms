@@ -3,7 +3,7 @@
   "jobs": [
     {
       "name": "process-scheduled-messages",
-      "schedule": "*/5 * * * *",
+      "schedule": "0 8 * * *",
       "path": "/api/cron/process-scheduled-messages",
       "headers": {
         "Authorization": "Bearer ${CRON_SECRET_KEY}"
@@ -11,7 +11,7 @@
     },
     {
       "name": "process-birthday-messages",
-      "schedule": "0 0 * * *",
+      "schedule": "0 9 * * *",
       "path": "/api/cron/process-birthday-messages",
       "headers": {
         "Authorization": "Bearer ${CRON_SECRET_KEY}"

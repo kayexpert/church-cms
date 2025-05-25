@@ -32,18 +32,22 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: false, error: 'Invalid token' }, { status: 401 });
     }
 
-    // Get current time
+    // Get current time and calculate 24 hours ago
     const now = new Date();
+    const yesterday = new Date(now.getTime() - 24 * 60 * 60 * 1000);
     console.log(`Processing scheduled messages at ${now.toISOString()}`);
+    console.log(`Looking for messages scheduled between ${yesterday.toISOString()} and ${now.toISOString()}`);
 
     // Find messages that are ready to be sent (active or scheduled status)
+    // Process all messages due in the last 24 hours since we only run once daily
     const { data: messages, error } = await supabaseAdmin
       .from('messages')
       .select('*')
       .in('status', ['active', 'scheduled']) // Include both active and scheduled messages
       .not('type', 'eq', 'birthday') // Exclude birthday messages as they're handled separately
-      .lte('schedule_time', now.toISOString())
-      .limit(50); // Process in batches
+      .gte('schedule_time', yesterday.toISOString()) // Messages scheduled since yesterday
+      .lte('schedule_time', now.toISOString()) // Up to now
+      .limit(100); // Increased batch size for daily processing
 
     if (error) {
       console.error('Error fetching scheduled messages:', error);

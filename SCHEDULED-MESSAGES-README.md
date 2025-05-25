@@ -42,8 +42,10 @@ The project includes a `vercel.json` file that defines the cron jobs. To enable 
 5. Make sure the `CRON_SECRET_KEY` environment variable is set
 
 The cron jobs are configured to run:
-- Every 5 minutes for scheduled messages (`/api/cron/process-scheduled-messages`)
-- Once a day at midnight for birthday messages (`/api/cron/process-birthday-messages`)
+- Once daily at 8:00 AM UTC for scheduled messages (`/api/cron/process-scheduled-messages`) - compatible with Vercel Hobby plan
+- Once daily at 9:00 AM UTC for birthday messages (`/api/cron/process-birthday-messages`)
+
+**Note**: Vercel Hobby accounts are limited to daily cron jobs. The system processes all messages scheduled in the last 24 hours during each daily run.
 
 ### 3. Testing
 

@@ -58,7 +58,7 @@ function TriggerCronButtonComponent() {
       disabled={isLoading}
       variant="outline"
       size="sm"
-      title="Trigger server-side scheduled message processing"
+      title="Manually trigger scheduled message processing (normally runs daily at 8:00 AM UTC)"
     >
       {isLoading ? (
         <>

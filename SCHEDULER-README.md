@@ -67,8 +67,8 @@ If you're deploying to Vercel, follow these steps to set up the cron jobs:
 3. Vercel will automatically detect the cron jobs from these configuration files
 4. Make sure the `CRON_SECRET_KEY` environment variable is set in your Vercel project settings
 5. The cron jobs will run automatically according to the schedule:
-   - `process-scheduled-messages`: Every 5 minutes
-   - `process-birthday-messages`: Once a day at midnight
+   - `process-scheduled-messages`: Once daily at 8:00 AM UTC (compatible with Vercel Hobby plan)
+   - `process-birthday-messages`: Once daily at 9:00 AM UTC
 
 ### 4. Testing Locally
 
@@ -131,8 +131,10 @@ The scheduler logs detailed information about message processing. You can view t
 
 You can customize the cron schedule in the `cron.json` file:
 
-- `process-scheduled-messages`: Currently runs every 5 minutes (`*/5 * * * *`)
-- `process-birthday-messages`: Currently runs once a day at 8 AM (`0 8 * * *`)
+- `process-scheduled-messages`: Currently runs once daily at 8:00 AM UTC (`0 8 * * *`) - compatible with Vercel Hobby plan
+- `process-birthday-messages`: Currently runs once daily at 9:00 AM UTC (`0 9 * * *`)
+
+**Note**: Vercel Hobby accounts are limited to daily cron jobs. If you need more frequent processing, consider upgrading to Vercel Pro or use the manual "Run Cron Job" button in the messaging interface.
 
 ### Batch Size
 

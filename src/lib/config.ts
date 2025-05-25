@@ -36,8 +36,9 @@ export const config = {
     },
     // Message scheduling configuration
     scheduling: {
-      checkInterval: 60000, // Check for scheduled messages every minute
-      batchSize: 10, // Number of messages to process in a batch
+      checkInterval: 60000, // Check for scheduled messages every minute (for manual triggers)
+      batchSize: 100, // Number of messages to process in a batch (increased for daily processing)
+      dailyProcessingTime: '08:00', // UTC time when daily cron job runs (8:00 AM UTC)
     },
   },
   routes: {
