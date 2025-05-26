@@ -431,7 +431,7 @@ export async function uploadMemberImage(file: File, memberId: string): Promise<S
 
     try {
       // Import the image optimization utilities dynamically (client-side only)
-      const { resizeAndOptimizeImage, getBestSupportedImageFormat } = await import('@/lib/image-utils');
+      const { resizeAndOptimizeImage, getBestSupportedImageFormat } = await import('@/lib/image-optimized');
 
       // Get the best supported image format
       const bestFormat = typeof window !== 'undefined' ? getBestSupportedImageFormat() : 'image/webp';

@@ -34,26 +34,31 @@ export function MobileSettingsNav({ activeTab, setActiveTab }: MobileSettingsNav
     {
       id: "general",
       label: "General",
+      shortLabel: "General",
       icon: <Cog className="h-4 w-4" />,
     },
     {
       id: "membership",
       label: "Membership",
+      shortLabel: "Members",
       icon: <Users className="h-4 w-4" />,
     },
     {
       id: "finance",
       label: "Finance",
+      shortLabel: "Finance",
       icon: <CreditCard className="h-4 w-4" />,
     },
     {
       id: "messages",
       label: "Messages",
+      shortLabel: "Messages",
       icon: <MessageSquare className="h-4 w-4" />,
     },
     {
       id: "database",
       label: "Database",
+      shortLabel: "Database",
       icon: <Database className="h-4 w-4" />,
     },
   ];
@@ -78,16 +83,14 @@ export function MobileSettingsNav({ activeTab, setActiveTab }: MobileSettingsNav
         <SheetTrigger asChild>
           <Button
             variant="outline"
-            className="flex items-center justify-between w-full shadow-sm hover:shadow-md transition-shadow"
+            className="flex items-center justify-between w-auto px-3 py-2 h-auto shadow-sm hover:shadow-md transition-shadow"
             aria-label={`Current section: ${currentTab.label}. Tap to change section.`}
           >
             <div className="flex items-center gap-2">
-              <span className="bg-primary/10 p-1.5 rounded-md">
-                {currentTab.icon}
-              </span>
-              <span className="font-medium">{currentTab.label}</span>
+              {currentTab.icon}
+              <span className="font-medium">{currentTab.shortLabel}</span>
             </div>
-            <Menu className="h-4 w-4 text-muted-foreground" />
+            <Menu className="h-4 w-4 text-muted-foreground ml-2" />
           </Button>
         </SheetTrigger>
         <SheetContent

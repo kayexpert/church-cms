@@ -121,8 +121,8 @@ export function useExpenditureData(
       };
     },
     enabled,
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    gcTime: 10 * 60 * 1000, // 10 minutes
+    staleTime: 3 * 60 * 1000, // 3 minutes - optimized for financial data
+    gcTime: 15 * 60 * 1000, // 15 minutes - longer cache time
     keepPreviousData: true, // Keep previous data while fetching new data
     refetchOnWindowFocus: false, // Don't refetch when window gains focus
     refetchOnMount: true, // Refetch when component mounts

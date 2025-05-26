@@ -128,7 +128,7 @@ export function Header({ title, onMenuClick }: HeaderProps) {
   }, [user]);
 
   return (
-    <header className="sticky top-0 z-30 flex items-center justify-between h-16 px-6 border-b bg-card shadow-sm">
+    <header className="sticky top-0 z-30 flex items-center justify-between h-16 pr-6 pl-3 border-b bg-card shadow-sm">
       <div className="flex items-center gap-3">
         <Button variant="ghost" size="icon" className="md:hidden" onClick={onMenuClick}>
           <Menu className="h-6 w-6" />

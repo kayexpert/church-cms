@@ -97,36 +97,42 @@ export function NewFinanceDashboard() {
     <div className="space-y-6">
       {/* Time Frame Selector */}
       <Card>
-        <CardHeader className="pb-3">
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle className="text-lg">Financial Overview</CardTitle>
-              <CardDescription>Summary of your financial data</CardDescription>
+        <CardHeader className="pb-3 md:pb-6">
+          <div className="flex flex-col space-y-4 md:flex-row md:items-center md:justify-between md:space-y-0">
+            <div className="space-y-1">
+              <CardTitle className="text-lg md:text-xl">Financial Overview</CardTitle>
+              <CardDescription className="text-sm md:text-base">
+                Summary of your financial data
+              </CardDescription>
             </div>
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2 md:gap-4">
               <Button
                 variant="outline"
                 size="icon"
                 onClick={handleManualRefresh}
                 disabled={isRefreshing || isLoading}
                 title="Refresh data"
+                className="h-8 w-8 md:h-10 md:w-10"
               >
-                <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+                <RefreshCw className={`h-3 w-3 md:h-4 md:w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
                 <span className="sr-only">Refresh data</span>
               </Button>
               <Tabs defaultValue={timeFrame} onValueChange={handleTimeFrameChange}>
-                <TabsList>
-                  <TabsTrigger value="month">
-                    <Calendar className="h-4 w-4 mr-2" />
-                    Month
+                <TabsList className="h-8 md:h-10">
+                  <TabsTrigger value="month" className="text-xs md:text-sm px-2 md:px-3">
+                    <Calendar className="h-3 w-3 md:h-4 md:w-4 mr-1 md:mr-2" />
+                    <span className="hidden sm:inline">Month</span>
+                    <span className="sm:hidden">M</span>
                   </TabsTrigger>
-                  <TabsTrigger value="quarter">
-                    <BarChart3 className="h-4 w-4 mr-2" />
-                    Quarter
+                  <TabsTrigger value="quarter" className="text-xs md:text-sm px-2 md:px-3">
+                    <BarChart3 className="h-3 w-3 md:h-4 md:w-4 mr-1 md:mr-2" />
+                    <span className="hidden sm:inline">Quarter</span>
+                    <span className="sm:hidden">Q</span>
                   </TabsTrigger>
-                  <TabsTrigger value="year">
-                    <ArrowDownUp className="h-4 w-4 mr-2" />
-                    Year
+                  <TabsTrigger value="year" className="text-xs md:text-sm px-2 md:px-3">
+                    <ArrowDownUp className="h-3 w-3 md:h-4 md:w-4 mr-1 md:mr-2" />
+                    <span className="hidden sm:inline">Year</span>
+                    <span className="sm:hidden">Y</span>
                   </TabsTrigger>
                 </TabsList>
               </Tabs>

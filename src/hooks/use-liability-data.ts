@@ -134,12 +134,11 @@ export function useLiabilityData(
       };
     },
     enabled,
-    staleTime: 0, // Always consider data stale to ensure fresh data
+    staleTime: 2 * 60 * 1000, // 2 minutes - reasonable for financial data
     gcTime: 10 * 60 * 1000, // 10 minutes
     keepPreviousData: true, // Keep previous data while fetching new data
-    refetchOnWindowFocus: true, // Refetch when window gains focus
+    refetchOnWindowFocus: false, // Disable for better performance
     refetchOnMount: true, // Refetch when component mounts
-    refetchInterval: 10000, // Refetch every 10 seconds
     retry: 2, // Retry failed requests twice
     retryDelay: attemptIndex => Math.min(1000 * 2 ** attemptIndex, 10000) // Exponential backoff
   });
@@ -189,8 +188,7 @@ export function useLiabilityEntry(id: string | null) {
       } as LiabilityEntry;
     },
     enabled: !!id,
-    staleTime: 0, // Always consider data stale to ensure fresh data
-    refetchOnWindowFocus: true, // Refetch when window gains focus
-    refetchInterval: 10000 // Refetch every 10 seconds
+    staleTime: 2 * 60 * 1000, // 2 minutes - reasonable for financial data
+    refetchOnWindowFocus: false, // Disable for better performance
   });
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, memo, forwardRef } from 'react';
+import { useState, useCallback, memo, forwardRef, useEffect } from 'react';
 import Image, { ImageProps } from 'next/image';
 import { cn } from '@/lib/utils';
 
@@ -39,7 +39,7 @@ const OptimizedImageComponent = forwardRef<HTMLImageElement, OptimizedImageProps
     const handleError = useCallback(() => {
       setIsLoading(false);
       setHasError(true);
-      
+
       // Try fallback if available and not already using it
       if (fallbackSrc && currentSrc !== fallbackSrc) {
         setCurrentSrc(fallbackSrc);
@@ -52,14 +52,14 @@ const OptimizedImageComponent = forwardRef<HTMLImageElement, OptimizedImageProps
 
     if (hasError && (!fallbackSrc || currentSrc === fallbackSrc)) {
       return (
-        <div 
+        <div
           className={cn(
             'relative overflow-hidden',
             errorClassName,
             className
           )}
-          style={{ 
-            width: props.width || '100%', 
+          style={{
+            width: props.width || '100%',
             height: props.height || 'auto',
             aspectRatio: props.width && props.height ? `${props.width}/${props.height}` : undefined
           }}
@@ -72,19 +72,19 @@ const OptimizedImageComponent = forwardRef<HTMLImageElement, OptimizedImageProps
     return (
       <div className={cn('relative overflow-hidden', className)}>
         {isLoading && showLoadingSpinner && (
-          <div 
+          <div
             className={cn(
               'absolute inset-0 z-10',
               loadingClassName
             )}
-            style={{ 
-              width: props.width || '100%', 
+            style={{
+              width: props.width || '100%',
               height: props.height || 'auto',
               aspectRatio: props.width && props.height ? `${props.width}/${props.height}` : undefined
             }}
           />
         )}
-        
+
         <Image
           ref={ref}
           src={currentSrc}
@@ -127,12 +127,12 @@ const sizeClasses = {
   xl: 'w-24 h-24 text-lg',
 };
 
-export const OptimizedAvatar = memo(({ 
-  src, 
-  alt, 
-  size = 'md', 
+export const OptimizedAvatar = memo(({
+  src,
+  alt,
+  size = 'md',
   fallbackInitials,
-  className 
+  className
 }: OptimizedAvatarProps) => {
   const [hasError, setHasError] = useState(false);
 
@@ -142,7 +142,7 @@ export const OptimizedAvatar = memo(({
 
   if (!src || hasError) {
     return (
-      <div 
+      <div
         className={cn(
           'rounded-full bg-gray-200 flex items-center justify-center font-medium text-gray-600',
           sizeClasses[size],
@@ -182,16 +182,16 @@ interface OptimizedIconProps {
   fallback?: React.ReactNode;
 }
 
-export const OptimizedIcon = memo(({ 
-  name, 
-  size = 24, 
+export const OptimizedIcon = memo(({
+  name,
+  size = 24,
   className,
-  fallback 
+  fallback
 }: OptimizedIconProps) => {
   const [IconComponent, setIconComponent] = useState<React.ComponentType<any> | null>(null);
   const [hasError, setHasError] = useState(false);
 
-  useState(() => {
+  useEffect(() => {
     // Dynamically import the icon
     import('lucide-react')
       .then((icons) => {
@@ -205,7 +205,7 @@ export const OptimizedIcon = memo(({
       .catch(() => {
         setHasError(true);
       });
-  });
+  }, [name]); // Add name as dependency
 
   if (hasError || !IconComponent) {
     return fallback || <div className={cn('w-6 h-6 bg-gray-200 rounded', className)} />;

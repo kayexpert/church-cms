@@ -121,7 +121,7 @@ function MessagingPageContent() {
   const layoutContent = useMemo(() => (
     <div className="space-y-6">
       {/* Main Content */}
-      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6 pb-16 md:pb-0">
+      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
         <div
           className="md:col-span-1 lg:col-span-1"
           onMouseEnter={handleSidebarHover}

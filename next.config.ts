@@ -11,7 +11,13 @@ const nextConfig: NextConfig = {
       'recharts',
       'date-fns',
       'react-window',
-      '@tanstack/react-virtual'
+      '@tanstack/react-virtual',
+      '@hookform/resolvers',
+      'react-hook-form',
+      'zod',
+      'clsx',
+      'class-variance-authority',
+      'tailwind-merge'
     ],
     // Disable CSS optimization to fix critters dependency issue
     optimizeCss: false,
@@ -63,32 +69,72 @@ const nextConfig: NextConfig = {
     if (!dev && !isServer) {
       config.optimization.splitChunks = {
         chunks: 'all',
+        maxInitialRequests: 25,
+        maxAsyncRequests: 25,
         cacheGroups: {
+          // Separate React and React DOM
+          react: {
+            test: /[\\/]node_modules[\\/](react|react-dom)[\\/]/,
+            name: 'react',
+            chunks: 'all',
+            priority: 30,
+          },
+          // Separate UI libraries
+          ui: {
+            test: /[\\/]node_modules[\\/](@radix-ui|@headlessui|@heroicons)[\\/]/,
+            name: 'ui',
+            chunks: 'all',
+            priority: 25,
+          },
+          // Separate charts and visualization
+          charts: {
+            test: /[\\/]node_modules[\\/](recharts|d3-.*)[\\/]/,
+            name: 'charts',
+            chunks: 'all',
+            priority: 20,
+          },
+          // Separate query and state management
+          query: {
+            test: /[\\/]node_modules[\\/](@tanstack|zustand)[\\/]/,
+            name: 'query',
+            chunks: 'all',
+            priority: 18,
+          },
+          // Separate form libraries
+          forms: {
+            test: /[\\/]node_modules[\\/](react-hook-form|@hookform|zod)[\\/]/,
+            name: 'forms',
+            chunks: 'all',
+            priority: 16,
+          },
+          // Separate utility libraries
+          utils: {
+            test: /[\\/]node_modules[\\/](date-fns|clsx|class-variance-authority|tailwind-merge)[\\/]/,
+            name: 'utils',
+            chunks: 'all',
+            priority: 14,
+          },
+          // Separate Supabase
+          supabase: {
+            test: /[\\/]node_modules[\\/](@supabase)[\\/]/,
+            name: 'supabase',
+            chunks: 'all',
+            priority: 12,
+          },
+          // Default vendor chunk for remaining node_modules
           vendor: {
             test: /[\\/]node_modules[\\/]/,
             name: 'vendors',
             chunks: 'all',
             priority: 10,
           },
+          // Common chunks for shared code
           common: {
             name: 'common',
             minChunks: 2,
             chunks: 'all',
             enforce: true,
             priority: 5,
-          },
-          // Separate large libraries
-          react: {
-            test: /[\\/]node_modules[\\/](react|react-dom)[\\/]/,
-            name: 'react',
-            chunks: 'all',
-            priority: 20,
-          },
-          charts: {
-            test: /[\\/]node_modules[\\/](recharts|d3-.*)[\\/]/,
-            name: 'charts',
-            chunks: 'all',
-            priority: 15,
           },
         },
       };

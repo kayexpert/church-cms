@@ -10,6 +10,14 @@ import {
 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
 import { useMediaQuery } from "@/hooks/use-media-query";
 
@@ -22,73 +30,94 @@ interface MessagingSidebarProps {
 }
 
 function MessagingSidebarComponent({ activeTab, setActiveTab }: MessagingSidebarProps) {
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-
-  // Use custom hook for media query instead of manual event listeners
-  const isMobile = useMediaQuery("(max-width: 767px)");
-
-  // Close mobile menu when tab changes
-  useEffect(() => {
-    if (isMobileMenuOpen) {
-      setIsMobileMenuOpen(false);
-    }
-  }, [activeTab, isMobileMenuOpen]);
+  const [open, setOpen] = useState(false);
 
   // Memoize menu items to prevent unnecessary re-renders
   const menuItems = useCallback(() => [
     {
       id: "quick-message" as MessageTabType,
       label: "Quick Message",
-      mobileLabel: "Quick",
-      icon: <MessageSquare className="h-5 w-5" />,
+      shortLabel: "Quick",
+      icon: <MessageSquare className="h-4 w-4" />,
     },
     {
       id: "group-message" as MessageTabType,
       label: "Group Message",
-      mobileLabel: "Group",
-      icon: <Users className="h-5 w-5" />,
+      shortLabel: "Group",
+      icon: <Users className="h-4 w-4" />,
     },
     {
       id: "birthday-message" as MessageTabType,
       label: "Birthday Message",
-      mobileLabel: "Birthday",
-      icon: <Cake className="h-5 w-5" />,
+      shortLabel: "Birthday",
+      icon: <Cake className="h-4 w-4" />,
     },
   ], []);
 
   const handleTabChange = useCallback((tabId: MessageTabType) => {
     setActiveTab(tabId);
-    if (isMobile) {
-      setIsMobileMenuOpen(false);
-    }
-  }, [setActiveTab, isMobile]);
+    setOpen(false);
+  }, [setActiveTab]);
 
   // Get menu items once
   const items = menuItems();
 
+  // Get current tab info
+  const currentTab = items.find((item) => item.id === activeTab) || items[0];
+
   return (
     <div className="mb-4 md:mb-0">
-      {/* Mobile bottom navigation bar (visible on small screens only) */}
-      <div className="fixed bottom-0 left-0 right-0 z-50 bg-background border-t md:hidden">
-        <div className="flex justify-around items-center p-2">
-          {items.map((item) => (
-            <button
-              key={item.id}
-              className={cn(
-                "flex flex-col items-center justify-center p-2 rounded-lg transition-colors",
-                activeTab === item.id
-                  ? "text-primary"
-                  : "text-muted-foreground hover:text-primary"
-              )}
-              onClick={() => handleTabChange(item.id)}
-              aria-label={item.label}
-              aria-current={activeTab === item.id ? "page" : undefined}
+      {/* Mobile Navigation (short button style like members page) */}
+      <div className="md:hidden">
+        <Sheet open={open} onOpenChange={setOpen}>
+          <SheetTrigger asChild>
+            <Button
+              variant="outline"
+              className="flex items-center justify-between w-auto px-3 py-2 h-auto shadow-sm hover:shadow-md transition-shadow"
+              aria-label={`Current section: ${currentTab.label}. Tap to change section.`}
             >
-              {item.icon}
-              <span className="text-xs mt-1">{item.mobileLabel}</span>
-            </button>
-          ))}
-        </div>
+              <div className="flex items-center gap-2">
+                {currentTab.icon}
+                <span className="font-medium">{currentTab.shortLabel}</span>
+              </div>
+              <Menu className="h-4 w-4 text-muted-foreground ml-2" />
+            </Button>
+          </SheetTrigger>
+          <SheetContent
+            side="bottom"
+            className="h-[70vh] rounded-t-xl max-h-[90vh] overflow-y-auto pb-safe"
+          >
+            <SheetHeader className="mb-4 sticky top-0 bg-background pt-2 pb-2 z-10">
+              <SheetTitle>Messaging</SheetTitle>
+              <SheetDescription>
+                Select a messaging section to navigate to
+              </SheetDescription>
+            </SheetHeader>
+            <div className="grid gap-2">
+              {items.map((item) => (
+                <Button
+                  key={item.id}
+                  variant={activeTab === item.id ? "default" : "ghost"}
+                  className={cn(
+                    "justify-start h-12 text-base",
+                    activeTab === item.id && "bg-primary text-primary-foreground"
+                  )}
+                  onClick={() => handleTabChange(item.id)}
+                >
+                  <div className="flex items-center gap-3">
+                    <span className={cn(
+                      "p-1.5 rounded-md",
+                      activeTab === item.id ? "bg-primary-foreground/20" : "bg-muted"
+                    )}>
+                      {item.icon}
+                    </span>
+                    <span>{item.label}</span>
+                  </div>
+                </Button>
+              ))}
+            </div>
+          </SheetContent>
+        </Sheet>
       </div>
 
       {/* Desktop sidebar (hidden on small screens) */}

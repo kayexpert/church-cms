@@ -686,7 +686,7 @@ function MessageListComponent({ type, refreshTrigger = 0 }: MessageListProps) {
 
   return (
     <div>
-      {isMobile ? renderMobileView() : desktopView}
+      {isMobile ? renderMobileView : desktopView}
 
       {/* View Message Dialog */}
       <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
