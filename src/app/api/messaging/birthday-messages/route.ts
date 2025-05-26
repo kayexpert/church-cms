@@ -194,24 +194,69 @@ export async function GET(request: NextRequest) {
       process.env.SUPABASE_SERVICE_ROLE_KEY || ''
     );
 
-    // Get all birthday messages
+    // First try to get birthday messages from the messages table (preferred approach)
+    try {
+      // Birthday messages are stored as 'group' type with a name prefix
+      const { data: messages, error } = await supabaseAdmin
+        .from('messages')
+        .select('*')
+        .eq('type', 'group')
+        .ilike('name', '[Birthday]%')
+        .order('created_at', { ascending: false });
+
+      if (!error && messages) {
+        console.log(`Found ${messages.length} birthday messages in messages table`);
+        return NextResponse.json({
+          success: true,
+          messages: messages.map(msg => ({
+            ...msg,
+            type: 'birthday' // Normalize the type for display
+          }))
+        });
+      }
+
+      // Try an alternative approach using payload metadata
+      const { data: payloadMessages, error: payloadError } = await supabaseAdmin
+        .from('messages')
+        .select('*')
+        .eq('type', 'group')
+        .contains('payload', { message_type: 'birthday' })
+        .order('created_at', { ascending: false });
+
+      if (!payloadError && payloadMessages && payloadMessages.length > 0) {
+        console.log(`Found ${payloadMessages.length} birthday messages using payload query`);
+        return NextResponse.json({
+          success: true,
+          messages: payloadMessages.map(msg => ({
+            ...msg,
+            type: 'birthday' // Normalize the type for display
+          }))
+        });
+      }
+    } catch (messagesTableError) {
+      console.error('Error getting birthday messages from messages table:', messagesTableError);
+    }
+
+    // If messages table approach fails, try the birthday_messages table as fallback
     const { data: messages, error } = await supabaseAdmin
       .from('birthday_messages')
       .select('*')
       .order('created_at', { ascending: false });
 
     if (error) {
-      console.error('Error getting birthday messages:', error);
+      console.log('birthday_messages table does not exist or is empty, returning empty array');
+      // Return empty array instead of error since this is expected
       return NextResponse.json({
-        success: false,
-        error: 'Failed to get birthday messages',
-        details: error.message
-      }, { status: 500 });
+        success: true,
+        messages: []
+      });
     }
+
+    console.log(`Found ${messages?.length || 0} birthday messages in birthday_messages table`);
 
     return NextResponse.json({
       success: true,
-      messages
+      messages: messages || []
     });
   } catch (error) {
     console.error('Error in get birthday messages endpoint:', error);

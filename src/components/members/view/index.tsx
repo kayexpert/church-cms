@@ -526,6 +526,8 @@ export function ViewMemberDialog({ member, open, onOpenChange, onMemberUpdate }:
         return;
       }
 
+      console.log("Member updated successfully in database:", updateResponse.data);
+
       // Ensure departments is an array before updating
       const departmentsToUpdate = Array.isArray(formData.departments) ? formData.departments : [];
       // Updating member departments

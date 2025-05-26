@@ -15,10 +15,7 @@ import {
   deleteMessageTemplate,
   getMessageLogs
 } from "@/services/messaging-service";
-import {
-  createEnhancedMessage,
-  sendMessageImmediately
-} from "@/services/enhanced-messaging-service";
+import { createEnhancedMessage } from "@/services/enhanced-messaging-service";
 import {
   Message,
   MessageWithRecipients,
@@ -67,8 +64,8 @@ export function useMessages(
   return useQuery({
     queryKey: [...QUERY_KEYS.messages.list({ page, pageSize, ...filters })],
     queryFn: () => getMessages(page, pageSize, filters),
-    staleTime: STALE_TIMES.FREQUENT,
-    gcTime: GC_TIMES.STANDARD,
+    staleTime: STALE_TIMES.MEDIUM, // Optimized for better caching
+    gcTime: GC_TIMES.LONG, // Keep data longer for better performance
     select: (response) => {
       // Validate the response data
       if (!response.data) {

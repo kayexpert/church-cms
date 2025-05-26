@@ -9,6 +9,7 @@ import {
 } from '@/services/member-service';
 import { memberKeys } from '@/providers/query-config';
 import { useMemo, useEffect, useCallback } from 'react';
+import { useMemberSync } from './use-member-sync';
 
 /**
  * Hook for fetching members with optional filtering and pagination
@@ -164,6 +165,7 @@ export function useMember(id: string | undefined) {
  */
 export function useMemberMutations() {
   const queryClient = useQueryClient();
+  const { syncMemberUpdate, syncMemberDeletion, syncMemberAddition } = useMemberSync();
 
   // Helper function to selectively invalidate queries based on mutation type
   const invalidateQueries = useCallback((type: 'add' | 'update' | 'delete', id?: string) => {
@@ -291,35 +293,26 @@ export function useMemberMutations() {
   const addMemberMutation = useMutation({
     mutationFn: (newMember: Omit<Member, 'id' | 'created_at' | 'updated_at'>) =>
       addMember(newMember),
-    onSuccess: () => {
-      invalidateQueries('add');
+    onSuccess: async () => {
+      // Use the sync hook for consistent updates
+      await syncMemberAddition();
     },
   });
 
   const updateMemberMutation = useMutation({
     mutationFn: ({ id, member }: { id: string; member: Partial<Member> }) =>
       updateMember(id, member),
-    onSuccess: (_, variables) => {
-      invalidateQueries('update', variables.id);
+    onSuccess: async (result, variables) => {
+      // Use the sync hook for consistent updates
+      await syncMemberUpdate(variables.id);
     },
   });
 
   const deleteMemberMutation = useMutation({
     mutationFn: (id: string) => deleteMember(id),
     onSuccess: async (_, id) => {
-      // Invalidate queries first
-      invalidateQueries('delete', id);
-
-      // Force an immediate refetch of all member list queries to ensure UI updates
-      await queryClient.refetchQueries({
-        predicate: (query) => {
-          const queryKey = query.queryKey;
-          return Array.isArray(queryKey) &&
-                 queryKey.length >= 2 &&
-                 queryKey[0] === 'members' &&
-                 queryKey[1] === 'list';
-        }
-      });
+      // Use the sync hook for consistent updates
+      await syncMemberDeletion(id);
     },
   });
 

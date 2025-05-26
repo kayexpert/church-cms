@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, memo, useMemo } from "react";
+import { useState, useEffect, useCallback, memo, useMemo, startTransition } from "react";
 import { format } from "date-fns";
 import { Trash2, Eye, Send, Loader2, ChevronLeft, ChevronRight } from "lucide-react";
 import { useMessages, useMessageMutations } from "@/hooks/use-messaging";
@@ -75,9 +75,11 @@ function MessageListComponent({ type, refreshTrigger = 0 }: MessageListProps) {
     return data;
   }, [data]);
 
-  // Memoized handlers to prevent unnecessary re-renders
+  // Memoized handlers to prevent unnecessary re-renders with transition for better UX
   const handlePageChange = useCallback((newPage: number) => {
-    setPage(newPage);
+    startTransition(() => {
+      setPage(newPage);
+    });
   }, []);
 
   const handleView = useCallback((message: Message) => {
@@ -421,7 +423,14 @@ function MessageListComponent({ type, refreshTrigger = 0 }: MessageListProps) {
     {
       key: 'schedule_time',
       label: 'Schedule',
-      render: (value: string) => format(new Date(value), 'PPP p'),
+      render: (value: string, row: Message) => {
+        // For birthday messages, show "Daily Check" instead of schedule time
+        if (row.name?.startsWith('[Birthday]') || row.type === 'birthday') {
+          return <span className="text-muted-foreground">Daily Check</span>;
+        }
+        // For other messages, show the formatted schedule time
+        return value ? format(new Date(value), 'PPP p') : <span className="text-muted-foreground">Not scheduled</span>;
+      },
     },
     {
       key: 'status',

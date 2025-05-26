@@ -48,11 +48,14 @@ export async function POST(request: NextRequest) {
     console.log(`Processing birthday messages for ${today.toISOString().split('T')[0]}`);
 
     // Find active birthday messages
+    // Note: Due to database constraints, birthday messages might be stored as 'group' type
+    // with special identifiers, so we check both approaches
+    // Also check for 'scheduled' status since birthday messages might get processed by the scheduled message processor
     const { data: birthdayMessages, error: messagesError } = await supabaseAdmin
       .from('messages')
       .select('*')
-      .eq('type', 'birthday')
-      .eq('status', 'active');
+      .or('type.eq.birthday,and(type.eq.group,name.ilike.[Birthday]%)')
+      .in('status', ['active', 'scheduled']);
 
     if (messagesError) {
       console.error('Error fetching birthday messages:', messagesError);
@@ -81,13 +84,15 @@ export async function POST(request: NextRequest) {
         // Get the days before setting (default to 0 for same-day)
         const daysBefore = message.days_before || 0;
 
-        // Calculate the target date (today + days before)
+        // Calculate the target date (today + days before to find future birthdays)
+        // If days_before = 0, we look for birthdays today
+        // If days_before = 1, we look for birthdays tomorrow (to send message 1 day before)
         const targetDate = new Date(today);
         targetDate.setDate(targetDate.getDate() + daysBefore);
 
         // Format month and day for comparison (MM-DD)
         const targetMonthDay = `${(targetDate.getMonth() + 1).toString().padStart(2, '0')}-${targetDate.getDate().toString().padStart(2, '0')}`;
-        console.log(`Looking for members with birthdays on month-day: ${targetMonthDay} (${daysBefore} days before)`);
+        console.log(`Looking for members with birthdays on month-day: ${targetMonthDay} (sending message ${daysBefore} days before their birthday)`);
 
         // Find members with birthdays on the target date
         const { data: birthdayMembers, error: membersError } = await supabaseAdmin
@@ -120,8 +125,24 @@ export async function POST(request: NextRequest) {
         const membersWithBirthdayToday = birthdayMembers.filter(member => {
           if (!member.date_of_birth) return false;
 
-          const birthDate = new Date(member.date_of_birth);
+          // Parse date safely to avoid timezone issues
+          // If the date is in YYYY-MM-DD format, parse it as local date
+          const dateStr = member.date_of_birth;
+          let birthDate: Date;
+
+          if (typeof dateStr === 'string' && dateStr.match(/^\d{4}-\d{2}-\d{2}$/)) {
+            // For YYYY-MM-DD format, create date in local timezone
+            const [year, month, day] = dateStr.split('-').map(Number);
+            birthDate = new Date(year, month - 1, day); // month is 0-indexed
+          } else {
+            // For other formats, use regular Date constructor
+            birthDate = new Date(dateStr);
+          }
+
           const birthMonthDay = `${(birthDate.getMonth() + 1).toString().padStart(2, '0')}-${birthDate.getDate().toString().padStart(2, '0')}`;
+
+          console.log(`Member ${member.first_name} ${member.last_name}: birth date = ${dateStr}, parsed date = ${birthDate.toISOString()}, formatted = ${birthMonthDay}, matches today = ${birthMonthDay === targetMonthDay}`);
+
           return birthMonthDay === targetMonthDay;
         });
 

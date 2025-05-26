@@ -8,7 +8,7 @@ import { z } from 'zod';
 const birthdayMessageSchema = z.object({
   name: z.string().min(1, "Message name is required"),
   content: z.string().min(1, "Message content is required"),
-  type: z.literal('birthday'),
+  type: z.literal('birthday').optional(), // Make type optional since it's implied
   days_before: z.number().int().min(0).max(30).default(0),
   status: z.enum(['active', 'inactive']).default('active'),
   frequency: z.enum(['yearly', 'monthly', 'one-time']).default('yearly'),
@@ -37,9 +37,11 @@ export async function POST(request: NextRequest) {
       }, { status: 400 });
     }
 
-    // Validate the request body
+    // Validate the request body (but don't require type field)
     try {
-      birthdayMessageSchema.parse(body);
+      // Remove type field if present since it's implied for birthday messages
+      const { type, ...bodyWithoutType } = body;
+      birthdayMessageSchema.parse({ ...bodyWithoutType, type: 'birthday' });
     } catch (validationError) {
       console.error('Validation error:', validationError);
       return NextResponse.json({
@@ -54,11 +56,10 @@ export async function POST(request: NextRequest) {
       content,
       days_before = 0,
       status = 'active',
-      frequency = 'yearly',
-      schedule_time = new Date().toISOString()
+      frequency = 'yearly'
     } = body;
 
-    console.log('Validated message data:', { name, content, days_before, status, frequency, schedule_time });
+    console.log('Validated message data:', { name, content, days_before, status, frequency });
 
     // Create a Supabase client with service role for more permissions
     const supabaseAdmin = createClient(
@@ -78,9 +79,9 @@ export async function POST(request: NextRequest) {
     // Create the birthday message in the messages table
     console.log('Creating birthday message in messages table');
 
-    // Note: We need to adapt to the table constraints
-    // - type must be 'group' (not 'birthday')
-    // - frequency must be one of: 'one-time', 'daily', 'weekly', 'monthly' (not 'yearly')
+    // Create as group type with special identifier (since birthday type constraint is not working)
+    console.log('Creating birthday message as group type with special identifier');
+
     const { data: message, error: messageError } = await supabaseAdmin
       .from('messages')
       .insert({
@@ -89,13 +90,8 @@ export async function POST(request: NextRequest) {
         type: 'group', // Use 'group' instead of 'birthday' due to constraint
         days_before,
         status,
-        frequency: 'monthly', // Use 'monthly' instead of 'yearly' due to constraint
-        schedule_time,
-        // Store additional metadata in payload
-        payload: {
-          message_type: 'birthday',
-          original_frequency: frequency
-        }
+        frequency: frequency === 'yearly' ? 'monthly' : frequency, // Map yearly to monthly
+        schedule_time: new Date().toISOString() // Set a default time to satisfy NOT NULL constraint, but this is ignored for birthday messages
       })
       .select()
       .single();

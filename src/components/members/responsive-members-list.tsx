@@ -7,6 +7,7 @@ import { ViewMemberDialog } from "@/components/members/view";
 import { DeleteMemberDialog } from "@/components/members/delete-member-dialog";
 import { toast } from "sonner";
 import { useMembers, useMemberMutations } from "@/hooks/useMembers";
+import { useMemberSync } from "@/hooks/use-member-sync";
 import { transformDatabaseMemberToUIMember, transformUIMemberToDatabaseMember } from "@/lib/member-utils";
 import { ResponsiveMembersTable } from "@/components/members/responsive-members-table";
 import { MemberCard } from "@/components/members/member-card";
@@ -84,6 +85,7 @@ export const ResponsiveMembersList = memo(function ResponsiveMembersList({
 
   // Get mutations for updating and deleting members
   const { updateMember, deleteMember } = useMemberMutations();
+  const { syncMemberUpdate } = useMemberSync();
 
   // Get the query client for cache manipulation
   const queryClient = useQueryClient();
@@ -177,95 +179,11 @@ export const ResponsiveMembersList = memo(function ResponsiveMembersList({
       // Update the selected member state to ensure the dialog shows the latest data
       setSelectedMember(updatedMember);
 
-      // Implement optimistic updates for better user experience
-      // This updates the UI immediately without waiting for the server response
-      if (membersData?.data) {
-        // Find the index of the member in the current data
-        const memberIndex = membersData.data.findIndex(member => member.id === updatedMember.id);
-
-        if (memberIndex !== -1) {
-          // Create a new array with the updated member
-          const updatedMembers = [...membersData.data];
-          const dbMemberForCache = transformUIMemberToDatabaseMember(updatedMember);
-          updatedMembers[memberIndex] = dbMemberForCache;
-
-          // Get all active queries that might contain this member
-          const memberListQueries = queryClient.getQueriesData({
-            queryKey: ['members', 'list']
-          });
-
-          // Update all relevant queries in the cache
-          memberListQueries.forEach(([queryKey, queryData]) => {
-            if (queryData && queryData.data && Array.isArray(queryData.data)) {
-              // Find the member in this query's data
-              const memberIdx = queryData.data.findIndex((m: any) => m.id === updatedMember.id);
-
-              if (memberIdx !== -1) {
-                // Create a new array with the updated member
-                const newData = [...queryData.data];
-                newData[memberIdx] = dbMemberForCache;
-
-                // Update the cache
-                queryClient.setQueryData(queryKey, {
-                  ...queryData,
-                  data: newData
-                });
-              }
-            }
-          });
-
-          // Also update the current query
-          queryClient.setQueryData(
-            ['members', {
-              page: currentPage,
-              pageSize: itemsPerPage,
-              status: statusFilter !== "all" ? statusFilter as 'active' | 'inactive' : undefined,
-              search: searchQuery || undefined,
-              refreshTrigger
-            }],
-            { data: { data: updatedMembers, count: membersData.count } }
-          );
-        }
-      }
-
-      // Use a more targeted approach to invalidate queries
-      // This ensures we only refetch what's necessary
-
-      // First, update the specific member detail query if it exists in the cache
-      queryClient.invalidateQueries({
-        queryKey: ['members', 'detail', updatedMember.id],
-        // Only refetch if the query is active
-        refetchActive: true
-      });
-
-      // Then, selectively invalidate list queries that might be affected by this update
-      queryClient.invalidateQueries({
-        queryKey: ['members', 'list'],
-        // Only refetch active queries to avoid unnecessary network requests
-        refetchActive: true,
-        // Use a predicate to be even more selective
-        predicate: (query) => {
-          // Only invalidate queries that might be affected by this update
-          // For example, if we're updating a member's status, we should invalidate
-          // queries that filter by status
-          const queryKey = query.queryKey;
-          if (!queryKey || !Array.isArray(queryKey)) return false;
-
-          // Check if this is a list query with filters
-          if (queryKey[0] === 'members' && queryKey[1] === 'list' && queryKey[2]) {
-            const filters = queryKey[2];
-            // If the query has a status filter and we're changing status, invalidate it
-            if (filters.status && updatedMember.status) return true;
-            // If the query has a search filter and we're changing name, invalidate it
-            if (filters.search &&
-                (updatedMember.firstName || updatedMember.lastName || updatedMember.email))
-              return true;
-          }
-
-          // By default, invalidate all list queries to be safe
-          return true;
-        }
-      });
+      // The mutation hook will automatically handle query invalidation and refetching
+      // Add an additional sync call for extra reliability
+      setTimeout(() => {
+        syncMemberUpdate(updatedMember.id);
+      }, 100);
 
       toast.dismiss(loadingToast);
       toast.success("Member updated successfully");
@@ -276,7 +194,7 @@ export const ResponsiveMembersList = memo(function ResponsiveMembersList({
       console.error("Error updating member:", error);
       toast.error("An unexpected error occurred");
     }
-  }, [updateMember, membersData, queryClient, currentPage, itemsPerPage, statusFilter, searchQuery, refreshTrigger]);
+  }, [updateMember, syncMemberUpdate]);
 
   const handleMemberDelete = useCallback(async (id: string) => {
     try {

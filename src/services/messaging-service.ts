@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/supabase';
+import { createClient } from '@supabase/supabase-js';
 import {
   Message,
   MessageWithRecipients,
@@ -8,6 +9,23 @@ import {
 } from '@/types/messaging';
 import { ServiceResponse, PaginatedResponse } from '@/types/common';
 import { Member } from '@/types/member';
+
+// Create a server-side Supabase client with service role for server operations
+function getSupabaseClient() {
+  // Check if we're running on the server side
+  if (typeof window === 'undefined') {
+    // Server-side: use service role client
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+    if (supabaseUrl && supabaseServiceKey) {
+      return createClient(supabaseUrl, supabaseServiceKey);
+    }
+  }
+
+  // Client-side: use the regular client
+  return supabase;
+}
 
 /**
  * Get all messages with pagination
@@ -21,7 +39,8 @@ export async function getMessages(
     console.log(`Fetching messages: page=${page}, pageSize=${pageSize}, filters=`, JSON.stringify(filters));
     console.log(`Looking for messages with type=${filters.type || 'any'} and status=${filters.status || 'any'}`);
 
-    let query = supabase
+    const client = getSupabaseClient();
+    let query = client
       .from('messages')
       .select('*', { count: 'exact' });
 
@@ -30,7 +49,13 @@ export async function getMessages(
       query = query.eq('status', filters.status);
     }
     if (filters.type) {
-      query = query.eq('type', filters.type);
+      if (filters.type === 'birthday') {
+        // Handle birthday messages (stored as group type with special name)
+        // Use a simpler approach that works with the client library
+        query = query.eq('type', 'group').ilike('name', '[Birthday]%');
+      } else {
+        query = query.eq('type', filters.type);
+      }
     }
 
     // Apply pagination
@@ -63,14 +88,22 @@ export async function getMessages(
       };
     }
 
-    // Validate each message object
-    const validMessages = data.filter(message => {
+    // Validate each message object and normalize birthday messages
+    const validMessages = data.filter((message: any) => {
       if (!message || !message.id) {
         console.error('Invalid message object in query result:', message);
         return false;
       }
       return true;
-    });
+    }).map((message: any) => ({
+      ...message,
+      // Normalize birthday messages
+      type: message.name?.startsWith('[Birthday]') ? 'birthday' : message.type,
+      // Add computed fields
+      is_birthday: message.name?.startsWith('[Birthday]') || message.type === 'birthday',
+      is_scheduled: message.status === 'scheduled' || (message.status === 'active' && new Date(message.schedule_time) > new Date()),
+      is_overdue: message.status === 'active' && new Date(message.schedule_time) < new Date()
+    }));
 
     console.log(`Fetched ${validMessages.length} valid messages out of ${data.length} total`);
 
@@ -94,8 +127,10 @@ export async function getMessages(
  */
 export async function getMessageById(id: string): Promise<ServiceResponse<MessageWithRecipients>> {
   try {
+    const client = getSupabaseClient();
+
     // Get the message
-    const { data: message, error: messageError } = await supabase
+    const { data: message, error: messageError } = await client
       .from('messages')
       .select('*')
       .eq('id', id)
@@ -107,7 +142,7 @@ export async function getMessageById(id: string): Promise<ServiceResponse<Messag
     }
 
     // Get the message recipients
-    const { data: recipients, error: recipientsError } = await supabase
+    const { data: recipients, error: recipientsError } = await client
       .from('message_recipients')
       .select('*')
       .eq('message_id', id);
@@ -139,10 +174,11 @@ export async function createMessage(
 ): Promise<ServiceResponse<Message>> {
   try {
     console.log('Creating message:', message);
+    const client = getSupabaseClient();
 
     // Check if the messages table exists
     try {
-      const { count, error: checkError } = await supabase
+      const { count, error: checkError } = await client
         .from('messages')
         .select('*', { count: 'exact', head: true });
 
@@ -162,7 +198,7 @@ export async function createMessage(
     }
 
     // Start a transaction
-    const { data, error } = await supabase
+    const { data, error } = await client
       .from('messages')
       .insert({
         name: message.name,
@@ -200,7 +236,7 @@ export async function createMessage(
 
       console.log('Inserting recipients:', recipientsToInsert);
 
-      const { error: recipientsError } = await supabase
+      const { error: recipientsError } = await client
         .from('message_recipients')
         .insert(recipientsToInsert);
 
@@ -242,8 +278,10 @@ export async function updateMessage(
   recipients?: Omit<MessageRecipient, 'id' | 'message_id' | 'created_at'>[]
 ): Promise<ServiceResponse<Message>> {
   try {
+    const client = getSupabaseClient();
+
     // Update the message
-    const { data, error } = await supabase
+    const { data, error } = await client
       .from('messages')
       .update({
         ...message,
@@ -261,7 +299,7 @@ export async function updateMessage(
     // If recipients are provided, update them
     if (recipients) {
       // First, delete existing recipients
-      const { error: deleteError } = await supabase
+      const { error: deleteError } = await client
         .from('message_recipients')
         .delete()
         .eq('message_id', id);
@@ -279,7 +317,7 @@ export async function updateMessage(
           recipient_id: recipient.recipient_id
         }));
 
-        const { error: insertError } = await supabase
+        const { error: insertError } = await client
           .from('message_recipients')
           .insert(recipientsToInsert);
 
@@ -302,7 +340,8 @@ export async function updateMessage(
  */
 export async function deleteMessage(id: string): Promise<ServiceResponse<null>> {
   try {
-    const { error } = await supabase
+    const client = getSupabaseClient();
+    const { error } = await client
       .from('messages')
       .delete()
       .eq('id', id);
@@ -324,7 +363,8 @@ export async function deleteMessage(id: string): Promise<ServiceResponse<null>> 
  */
 export async function deleteMessages(ids: string[]): Promise<ServiceResponse<null>> {
   try {
-    const { error } = await supabase
+    const client = getSupabaseClient();
+    const { error } = await client
       .from('messages')
       .delete()
       .in('id', ids);
@@ -350,7 +390,8 @@ export async function getMessageLogs(
   filters: { status?: string; message_id?: string } = {}
 ): Promise<ServiceResponse<PaginatedResponse<MessageLog>>> {
   try {
-    let query = supabase
+    const client = getSupabaseClient();
+    let query = client
       .from('message_logs')
       .select('*', { count: 'exact' });
 
@@ -447,7 +488,8 @@ export async function createMessageLog(
 
     // Check if a log already exists for this message and recipient
     // to prevent duplicate logs
-    const { data: existingLog, error: checkError } = await supabase
+    const client = getSupabaseClient();
+    const { data: existingLog, error: checkError } = await client
       .from('message_logs')
       .select('*')
       .eq('message_id', log.message_id)
@@ -462,7 +504,7 @@ export async function createMessageLog(
       if (existingLog.status === 'pending' && log.status !== 'pending') {
         console.log(`Updating existing log from 'pending' to '${log.status}'`);
 
-        const { data: updatedLog, error: updateError } = await supabase
+        const { data: updatedLog, error: updateError } = await client
           .from('message_logs')
           .update({
             status: log.status,
@@ -507,7 +549,7 @@ export async function createMessageLog(
     });
 
     try {
-      const { data, error } = await supabase
+      const { data, error } = await client
         .from('message_logs')
         .insert(logData)
         .select()
@@ -522,7 +564,7 @@ export async function createMessageLog(
 
           // Try a simplified insert without the select
           try {
-            const { error: retryError } = await supabase
+            const { error: retryError } = await client
               .from('message_logs')
               .insert(logData);
 
@@ -561,7 +603,7 @@ export async function createMessageLog(
 
       // Try one more time with a simplified approach
       try {
-        const { error: simpleError } = await supabase
+        const { error: simpleError } = await client
           .from('message_logs')
           .insert({
             message_id: log.message_id,
@@ -619,7 +661,8 @@ export async function createMessageLog(
 
     // Try a last-resort direct insert without any bells and whistles
     try {
-      await supabase
+      const client = getSupabaseClient();
+      await client
         .from('message_logs')
         .insert({
           message_id: log.message_id,
@@ -642,7 +685,8 @@ export async function createMessageLog(
  */
 export async function getMessageTemplates(): Promise<ServiceResponse<MessageTemplate[]>> {
   try {
-    const { data, error } = await supabase
+    const client = getSupabaseClient();
+    const { data, error } = await client
       .from('message_templates')
       .select('*')
       .order('name');
@@ -664,7 +708,8 @@ export async function getMessageTemplates(): Promise<ServiceResponse<MessageTemp
  */
 export async function getMessageTemplateById(id: string): Promise<ServiceResponse<MessageTemplate>> {
   try {
-    const { data, error } = await supabase
+    const client = getSupabaseClient();
+    const { data, error } = await client
       .from('message_templates')
       .select('*')
       .eq('id', id)
@@ -689,7 +734,8 @@ export async function createMessageTemplate(
   template: Omit<MessageTemplate, 'id' | 'created_at' | 'updated_at'>
 ): Promise<ServiceResponse<MessageTemplate>> {
   try {
-    const { data, error } = await supabase
+    const client = getSupabaseClient();
+    const { data, error } = await client
       .from('message_templates')
       .insert({
         name: template.name,
@@ -718,7 +764,8 @@ export async function updateMessageTemplate(
   template: Partial<Omit<MessageTemplate, 'id' | 'created_at' | 'updated_at'>>
 ): Promise<ServiceResponse<MessageTemplate>> {
   try {
-    const { data, error } = await supabase
+    const client = getSupabaseClient();
+    const { data, error } = await client
       .from('message_templates')
       .update({
         ...template,
@@ -745,7 +792,8 @@ export async function updateMessageTemplate(
  */
 export async function deleteMessageTemplate(id: string): Promise<ServiceResponse<null>> {
   try {
-    const { error } = await supabase
+    const client = getSupabaseClient();
+    const { error } = await client
       .from('message_templates')
       .delete()
       .eq('id', id);

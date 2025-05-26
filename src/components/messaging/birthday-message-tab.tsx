@@ -1,21 +1,37 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useCallback, memo, lazy, Suspense } from 'react';
 import { toast } from 'sonner';
-import { AlertCircle } from 'lucide-react';
+import { AlertCircle, Play, Loader2 } from 'lucide-react';
 
 import { Card } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { BirthdayMessageForm } from '@/components/messaging/birthday-message-form';
-import { MessageList } from '@/components/messaging/message-list';
-import { BirthdayMembersList } from '@/components/messaging/birthday-members-list';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Button } from '@/components/ui/button';
 import { BirthdayMessageFormValues } from '@/types/birthday-messaging';
 import { createBirthdayMessage } from '@/services/birthday-message-service';
 import { useMutation } from '@tanstack/react-query';
 
+// Lazy load components for better performance
+const BirthdayMessageForm = lazy(() =>
+  import('@/components/messaging/birthday-message-form')
+    .then(mod => ({ default: mod.BirthdayMessageForm }))
+);
+
+const MessageList = lazy(() =>
+  import('@/components/messaging/message-list')
+    .then(mod => ({ default: mod.MessageList }))
+);
+
+const BirthdayMembersList = lazy(() =>
+  import('@/components/messaging/birthday-members-list')
+    .then(mod => ({ default: mod.BirthdayMembersList }))
+);
+
 export function BirthdayMessageTab() {
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [configError, setConfigError] = useState<string | null>(null);
+  const [isTestingCron, setIsTestingCron] = useState(false);
 
   // Use React Query for mutations
   const createMessage = useMutation({
@@ -25,7 +41,15 @@ export function BirthdayMessageTab() {
     }
   });
 
-  const handleSubmit = async (values: BirthdayMessageFormValues) => {
+  // Memoized loading skeleton component
+  const LoadingSkeleton = useCallback(() => (
+    <div className="space-y-4">
+      <Skeleton className="h-8 w-48" />
+      <Skeleton className="h-32 w-full" />
+    </div>
+  ), []);
+
+  const handleSubmit = useCallback(async (values: BirthdayMessageFormValues) => {
     try {
       // Clear any previous config errors
       setConfigError(null);
@@ -100,7 +124,66 @@ export function BirthdayMessageTab() {
         duration: 8000
       });
     }
-  };
+  }, []);
+
+  // Function to test the birthday message cron job
+  const handleTestCronJob = useCallback(async () => {
+    setIsTestingCron(true);
+
+    try {
+      // Show loading toast
+      const loadingToastId = toast.loading("Running birthday message cron job...", {
+        description: "This will check for members with birthdays today and send them birthday messages."
+      });
+
+      // Call the test cron endpoint
+      const response = await fetch('/api/test/birthday-cron', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      // Dismiss loading toast
+      toast.dismiss(loadingToastId);
+
+      if (response.ok) {
+        const data = await response.json();
+
+        if (data.success) {
+          const { totalMessages, totalMembers, successCount, failureCount } = data;
+
+          toast.success("Birthday message cron job completed successfully!", {
+            description: `Processed ${totalMessages} message(s) for ${totalMembers} member(s). ${successCount} sent, ${failureCount} failed.`,
+            duration: 8000
+          });
+        } else {
+          toast.error("Cron job completed with errors", {
+            description: data.error || "Unknown error occurred",
+            duration: 8000
+          });
+        }
+      } else {
+        const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+        toast.error("Failed to run cron job", {
+          description: errorData.error || `HTTP ${response.status}: ${response.statusText}`,
+          duration: 8000
+        });
+      }
+
+      // Refresh the lists to show any new message logs
+      setRefreshTrigger(prev => prev + 1);
+
+    } catch (error) {
+      console.error("Error testing cron job:", error);
+      toast.error("Failed to run birthday message cron job", {
+        description: error instanceof Error ? error.message : "An unknown error occurred",
+        duration: 8000
+      });
+    } finally {
+      setIsTestingCron(false);
+    }
+  }, []);
 
   return (
     <Card className="p-4 md:p-6">
@@ -123,26 +206,53 @@ export function BirthdayMessageTab() {
 
       <div className="space-y-6 md:space-y-8">
         <div>
-          <h2 className="text-lg md:text-xl font-medium mb-3 md:mb-4">Create Birthday Message</h2>
-          <BirthdayMessageForm
-            onSubmit={handleSubmit}
-            isSubmitting={createMessage.isPending}
-          />
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-3 md:mb-4">
+            <h2 className="text-lg md:text-xl font-medium">Create Birthday Message</h2>
+            <Button
+              onClick={handleTestCronJob}
+              disabled={isTestingCron}
+              variant="outline"
+              size="sm"
+              className="w-fit"
+            >
+              {isTestingCron ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Running Cron Job...
+                </>
+              ) : (
+                <>
+                  <Play className="mr-2 h-4 w-4" />
+                  Test Birthday Cron Job
+                </>
+              )}
+            </Button>
+          </div>
+          <Suspense fallback={<LoadingSkeleton />}>
+            <BirthdayMessageForm
+              onSubmit={handleSubmit}
+              isSubmitting={createMessage.isPending}
+            />
+          </Suspense>
         </div>
 
         <div>
           <h2 className="text-lg md:text-xl font-medium mb-3 md:mb-4">Birthday Message History</h2>
-          <MessageList
-            type="birthday"
-            refreshTrigger={refreshTrigger}
-          />
+          <Suspense fallback={<LoadingSkeleton />}>
+            <MessageList
+              type="birthday"
+              refreshTrigger={refreshTrigger}
+            />
+          </Suspense>
         </div>
 
         <div>
           <h2 className="text-lg md:text-xl font-medium mb-3 md:mb-4">Members with Birthdays</h2>
-          <BirthdayMembersList
-            refreshTrigger={refreshTrigger}
-          />
+          <Suspense fallback={<LoadingSkeleton />}>
+            <BirthdayMembersList
+              refreshTrigger={refreshTrigger}
+            />
+          </Suspense>
         </div>
       </div>
     </Card>

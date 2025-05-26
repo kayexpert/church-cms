@@ -41,22 +41,24 @@ export async function POST(request: NextRequest) {
 
     const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Get current time and calculate 24 hours ago
+    // Get current time and calculate appropriate time window
     const now = new Date();
-    const yesterday = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+    // For frequent execution (every 15 minutes), look back 20 minutes to ensure we don't miss any
+    const lookbackMinutes = 20;
+    const lookbackTime = new Date(now.getTime() - lookbackMinutes * 60 * 1000);
     console.log(`Processing scheduled messages at ${now.toISOString()}`);
-    console.log(`Looking for messages scheduled between ${yesterday.toISOString()} and ${now.toISOString()}`);
+    console.log(`Looking for messages scheduled between ${lookbackTime.toISOString()} and ${now.toISOString()}`);
 
     // Find messages that are ready to be sent (active or scheduled status)
-    // Process all messages due in the last 24 hours since we only run once daily
+    // Process messages due in the last 20 minutes for frequent execution
     const { data: messages, error } = await supabaseAdmin
       .from('messages')
       .select('*')
       .in('status', ['active', 'scheduled']) // Include both active and scheduled messages
       .not('type', 'eq', 'birthday') // Exclude birthday messages as they're handled separately
-      .gte('schedule_time', yesterday.toISOString()) // Messages scheduled since yesterday
+      .gte('schedule_time', lookbackTime.toISOString()) // Messages scheduled since lookback time
       .lte('schedule_time', now.toISOString()) // Up to now
-      .limit(100); // Increased batch size for daily processing
+      .limit(50); // Smaller batch size for frequent processing
 
     if (error) {
       console.error('Error fetching scheduled messages:', error);
