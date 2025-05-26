@@ -18,40 +18,61 @@ import { MobileFinanceTabs } from "@/components/finance/mobile-finance-tabs";
 import { useQueryClient } from "@tanstack/react-query";
 import { prefetchFinanceData } from "@/lib/prefetch-finance-data";
 
-// Import the new dashboard - Remove loading property to use Suspense fallbacks instead
+// Optimized dynamic imports with better chunking and preloading
 const FinanceDashboard = dynamic(
   () => import("@/components/finance/new-dashboard/new-finance-dashboard").then(mod => ({ default: mod.NewFinanceDashboard })),
-  { ssr: false }
+  {
+    ssr: false,
+    loading: () => <FinanceDashboardSkeleton />
+  }
 );
 
 const IncomeManagement = dynamic(
   () => import("@/components/finance/income-management/income-management"),
-  { ssr: false }
+  {
+    ssr: false,
+    loading: () => <IncomeManagementSkeleton />
+  }
 );
 
 const ExpenditureManagement = dynamic(
   () => import("@/components/finance/expenditure-management/enhanced-expenditure-management"),
-  { ssr: false }
+  {
+    ssr: false,
+    loading: () => <ExpenditureManagementSkeleton />
+  }
 );
 
 const LiabilityManagement = dynamic(
   () => import("@/components/finance/liability-management/enhanced-liability-management"),
-  { ssr: false }
+  {
+    ssr: false,
+    loading: () => <LiabilityManagementSkeleton />
+  }
 );
 
 const BudgetManagement = dynamic(
   () => import("@/components/finance/budget-management/enhanced-budget-management"),
-  { ssr: false }
+  {
+    ssr: false,
+    loading: () => <BudgetManagementSkeleton />
+  }
 );
 
 const BankReconciliation = dynamic(
   () => import("@/components/finance/bank-reconciliation/enhanced-bank-reconciliation"),
-  { ssr: false }
+  {
+    ssr: false,
+    loading: () => <BankReconciliationSkeleton />
+  }
 );
 
 const AccountManagement = dynamic(
   () => import("@/components/finance/account-management").then(mod => ({ default: mod.AccountManagement })),
-  { ssr: false }
+  {
+    ssr: false,
+    loading: () => <AccountManagementSkeleton />
+  }
 );
 
 import {
@@ -70,7 +91,6 @@ export const FinanceContent = React.memo(function FinanceContent() {
   const searchParams = useSearchParams();
   const [activeTab, setActiveTab] = useState("dashboard");
   const [isLoading, setIsLoading] = useState(true);
-  const [refreshTrigger, setRefreshTrigger] = useState(0);
 
   // Define tab order once outside of effects for reuse
   const tabOrder = ["dashboard", "income", "expenditure", "liabilities", "accounts", "budgeting", "reconciliation"];
@@ -127,9 +147,6 @@ export const FinanceContent = React.memo(function FinanceContent() {
 
     // Update the active tab state immediately
     setActiveTab(tab);
-
-    // Increment the refresh trigger to force a remount of the Suspense boundary
-    setRefreshTrigger(prev => prev + 1);
 
     // Update the URL without full page reload
     router.push(`/finance?tab=${tab}`, { scroll: false });
@@ -207,61 +224,33 @@ export const FinanceContent = React.memo(function FinanceContent() {
             </TabsList>
           </div>
 
-          {/* Optimize TabsContent to only render the active tab with appropriate skeletons */}
-          <TabsContent value="dashboard" className="space-y-6" forceMount={activeTab === "dashboard"}>
-            {activeTab === "dashboard" && (
-              <Suspense key={`dashboard-suspense-${refreshTrigger}`} fallback={<FinanceDashboardSkeleton />}>
-                <FinanceDashboard />
-              </Suspense>
-            )}
+          {/* Optimized TabsContent - only render active tab to improve performance */}
+          <TabsContent value="dashboard" className="space-y-6">
+            {activeTab === "dashboard" && <FinanceDashboard />}
           </TabsContent>
 
-          <TabsContent value="income" className="space-y-6" forceMount={activeTab === "income"}>
-            {activeTab === "income" && (
-              <Suspense key={`income-suspense-${refreshTrigger}`} fallback={<IncomeManagementSkeleton />}>
-                <IncomeManagement />
-              </Suspense>
-            )}
+          <TabsContent value="income" className="space-y-6">
+            {activeTab === "income" && <IncomeManagement />}
           </TabsContent>
 
-          <TabsContent value="expenditure" className="space-y-6" forceMount={activeTab === "expenditure"}>
-            {activeTab === "expenditure" && (
-              <Suspense key={`expenditure-suspense-${refreshTrigger}`} fallback={<ExpenditureManagementSkeleton />}>
-                <ExpenditureManagement />
-              </Suspense>
-            )}
+          <TabsContent value="expenditure" className="space-y-6">
+            {activeTab === "expenditure" && <ExpenditureManagement />}
           </TabsContent>
 
-          <TabsContent value="liabilities" className="space-y-6" forceMount={activeTab === "liabilities"}>
-            {activeTab === "liabilities" && (
-              <Suspense key={`liabilities-suspense-${refreshTrigger}`} fallback={<LiabilityManagementSkeleton />}>
-                <LiabilityManagement />
-              </Suspense>
-            )}
+          <TabsContent value="liabilities" className="space-y-6">
+            {activeTab === "liabilities" && <LiabilityManagement />}
           </TabsContent>
 
-          <TabsContent value="accounts" className="space-y-6" forceMount={activeTab === "accounts"}>
-            {activeTab === "accounts" && (
-              <Suspense key={`accounts-suspense-${refreshTrigger}`} fallback={<AccountManagementSkeleton />}>
-                <AccountManagement />
-              </Suspense>
-            )}
+          <TabsContent value="accounts" className="space-y-6">
+            {activeTab === "accounts" && <AccountManagement />}
           </TabsContent>
 
-          <TabsContent value="budgeting" className="space-y-6" forceMount={activeTab === "budgeting"}>
-            {activeTab === "budgeting" && (
-              <Suspense key={`budgeting-suspense-${refreshTrigger}`} fallback={<BudgetManagementSkeleton />}>
-                <BudgetManagement />
-              </Suspense>
-            )}
+          <TabsContent value="budgeting" className="space-y-6">
+            {activeTab === "budgeting" && <BudgetManagement />}
           </TabsContent>
 
-          <TabsContent value="reconciliation" className="space-y-6" forceMount={activeTab === "reconciliation"}>
-            {activeTab === "reconciliation" && (
-              <Suspense key={`reconciliation-suspense-${refreshTrigger}`} fallback={<BankReconciliationSkeleton />}>
-                <BankReconciliation />
-              </Suspense>
-            )}
+          <TabsContent value="reconciliation" className="space-y-6">
+            {activeTab === "reconciliation" && <BankReconciliation />}
           </TabsContent>
         </Tabs>
       </div>

@@ -261,10 +261,10 @@ export function MembersDashboard({ initialStats = null }: MembersDashboardProps 
         <h2 className="text-2xl font-bold tracking-tight">Dashboard</h2>
         <button
           onClick={refreshDashboard}
-          className="flex items-center gap-1 px-3 py-1 text-sm rounded-md bg-primary/10 hover:bg-primary/20 transition-colors"
+          className="flex items-center justify-center w-10 h-10 rounded-lg bg-muted/50 hover:bg-muted/80 border border-border/50 transition-all duration-200 hover:scale-105 active:scale-95"
+          title="Refresh Dashboard"
         >
-          <RefreshCw className="h-4 w-4" />
-          <span>Refresh</span>
+          <RefreshCw className="h-4 w-4 text-muted-foreground" />
         </button>
       </div>
 

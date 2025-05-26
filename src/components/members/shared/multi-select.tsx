@@ -18,10 +18,10 @@ export interface MultiSelectProps {
   variant?: "primary" | "success";
 }
 
-export function MultiSelect({ 
-  options, 
-  selected = [], 
-  onChange, 
+export function MultiSelect({
+  options,
+  selected = [],
+  onChange,
   placeholder = "Select options...",
   variant = "primary"
 }: MultiSelectProps) {
@@ -38,7 +38,7 @@ export function MultiSelect({
   };
 
   const getBadgeStyles = () => {
-    return variant === "primary" 
+    return variant === "primary"
       ? "bg-primary/10 text-primary border-primary/20"
       : "bg-green-500/10 text-green-500 border-green-500/20";
   };
@@ -46,7 +46,7 @@ export function MultiSelect({
   return (
     <div className="relative">
       <div
-        className="w-full flex flex-wrap items-center rounded-md border border-input dark:bg-input/30 dark:hover:bg-input/50 px-3 py-2 text-sm ring-offset-background cursor-pointer gap-1 h-9 shadow-xs outline-none"
+        className="w-full flex flex-wrap items-center rounded-md border border-input dark:bg-input/30 dark:hover:bg-input/50 px-3 py-2 text-sm ring-offset-background cursor-pointer gap-1 min-h-[2.25rem] shadow-xs outline-none"
         onClick={() => setIsOpen(!isOpen)}
       >
         {safeSelected.length > 0 ? (
@@ -57,16 +57,16 @@ export function MultiSelect({
                 <Badge
                   key={opt.id}
                   variant="outline"
-                  className={getBadgeStyles()}
+                  className={`${getBadgeStyles()} text-xs px-2 py-0.5 h-6 flex items-center max-w-full truncate`}
                 >
-                  {opt.name}
+                  <span className="truncate">{opt.name}</span>
                 </Badge>
               ))}
           </>
         ) : (
           <span className="text-muted-foreground">{placeholder}</span>
         )}
-        <div className="ml-auto">
+        <div className="ml-auto flex-shrink-0 self-start mt-0.5">
           <ChevronDown className={`h-4 w-4 opacity-50 transition-transform ${isOpen ? "rotate-180" : ""}`} />
         </div>
       </div>

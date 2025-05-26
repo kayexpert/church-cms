@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase-server';
 import { Suspense } from 'react';
 import { MembersContent } from '@/components/members/members-content';
-import { MembersContentSkeleton } from '@/components/members/members-content-skeleton';
+import { MembersListSkeleton } from '@/components/members/members-consolidated-skeletons';
 
 /**
  * Server component that fetches initial member data
@@ -49,7 +49,7 @@ export async function MembersServer() {
 
     // Pass the initial data to the client component
     return (
-      <Suspense fallback={<MembersContentSkeleton />}>
+      <Suspense fallback={<MembersListSkeleton includeHeader={true} />}>
         <MembersContent
           initialMembers={initialMembers}
           initialCount={count}
@@ -63,7 +63,7 @@ export async function MembersServer() {
     // Return the component without initial data
     // The client-side will handle fetching the data
     return (
-      <Suspense fallback={<MembersContentSkeleton />}>
+      <Suspense fallback={<MembersListSkeleton includeHeader={true} />}>
         <MembersContent />
       </Suspense>
     );

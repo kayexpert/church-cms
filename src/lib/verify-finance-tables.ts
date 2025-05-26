@@ -394,7 +394,8 @@ export async function createMissingFinanceTables(missingTables: string[]): Promi
           await supabase.from('income_categories').insert([
             { name: 'Tithes', description: 'Regular tithes from members' },
             { name: 'Offerings', description: 'General offerings' },
-            { name: 'Donations', description: 'Donations from members and non-members' }
+            { name: 'Donations', description: 'Donations from members and non-members' },
+            { name: 'Asset Disposal', description: 'System category for income from asset disposals - auto-created' }
           ]);
 
           // Create expenditure categories

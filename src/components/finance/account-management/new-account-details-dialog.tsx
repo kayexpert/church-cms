@@ -13,15 +13,15 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
-import { RefreshCw, AlertCircle, ArrowDownUp } from "lucide-react";
+import { RefreshCw, AlertCircle } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { formatCurrency } from "@/lib/format-currency";
 import { TransactionTable } from "@/components/finance/common/transaction-table";
-import { FixAccountTransactionsButton } from "./fix-account-transactions-button";
+
 import { supabase } from "@/lib/supabase";
 import { isOpeningBalanceEntry } from "@/lib/identify-special-income-entries";
-import { syncAllTransactionsForAccount } from "@/lib/sync-account-transactions";
+
 
 interface AccountDetailsDialogProps {
   account: Account;
@@ -33,7 +33,6 @@ export function NewAccountDetailsDialog({ account, open, onOpenChange }: Account
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState("overview");
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [isSyncing, setIsSyncing] = useState(false);
 
   // State for direct data fetching (no React Query caching)
   const [transactions, setTransactions] = useState<AccountTransaction[]>([]);
@@ -146,34 +145,7 @@ export function NewAccountDetailsDialog({ account, open, onOpenChange }: Account
 
   }, [account.opening_balance]);
 
-  // Function to sync all transactions for this account
-  const handleSyncAllTransactions = async () => {
-    if (!account.id) return;
 
-    setIsSyncing(true);
-    toast.info("Syncing all transactions for this account...");
-
-    try {
-      // Use the comprehensive sync function
-      await syncAllTransactionsForAccount(account.id);
-
-      // Refresh the data after syncing
-      await fetchTransactions();
-
-      // Also invalidate relevant queries to ensure UI consistency
-      queryClient.invalidateQueries({ queryKey: ["accounts"] });
-      queryClient.invalidateQueries({
-        queryKey: financeKeys.accounts.transactions(account.id)
-      });
-
-      toast.success("All transactions synced successfully");
-    } catch (error) {
-      console.error("Error syncing transactions:", error);
-      toast.error("Failed to sync transactions");
-    } finally {
-      setIsSyncing(false);
-    }
-  };
 
   // Set up realtime subscriptions for database changes
   useEffect(() => {
@@ -323,17 +295,6 @@ export function NewAccountDetailsDialog({ account, open, onOpenChange }: Account
                   className="flex items-center gap-1"
                 >
                   <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
-                  {isRefreshing ? 'Refreshing...' : 'Refresh'}
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleSyncAllTransactions}
-                  disabled={isSyncing || isRefreshing}
-                  className="flex items-center gap-1"
-                >
-                  <ArrowDownUp className={`h-4 w-4 ${isSyncing ? 'animate-spin' : ''}`} />
-                  {isSyncing ? 'Syncing...' : 'Sync Data'}
                 </Button>
               </div>
             </div>
@@ -433,17 +394,6 @@ export function NewAccountDetailsDialog({ account, open, onOpenChange }: Account
                     className="flex items-center gap-1"
                   >
                     <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
-                    {isRefreshing ? 'Refreshing...' : 'Refresh'}
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={handleSyncAllTransactions}
-                    disabled={isSyncing || isRefreshing}
-                    className="flex items-center gap-1"
-                  >
-                    <ArrowDownUp className={`h-4 w-4 ${isSyncing ? 'animate-spin' : ''}`} />
-                    {isSyncing ? 'Syncing...' : 'Sync All Transactions'}
                   </Button>
                 </div>
               </div>
@@ -490,12 +440,8 @@ export function NewAccountDetailsDialog({ account, open, onOpenChange }: Account
                     No transactions found for this account
                   </p>
                   <p className="text-amber-800 text-sm">
-                    If you have income or expenditure entries that are not showing up here,
-                    click the "Sync All Transactions" button above to fix this issue.
-                  </p>
-                  <p className="text-amber-800 text-sm mt-1">
-                    This will sync all income entries (including opening balances) and expenditure entries
-                    with this account's transaction history.
+                    Transactions are automatically synchronized when income or expenditure entries are created.
+                    If you're missing transactions, they should appear automatically when new entries are added.
                   </p>
                 </div>
               )}

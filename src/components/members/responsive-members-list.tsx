@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, memo } from "react";
 import { Trash2, Users, Wifi, Clock, ShieldAlert, UserPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ViewMemberDialog } from "@/components/members/view";
@@ -11,6 +11,7 @@ import { transformDatabaseMemberToUIMember, transformUIMemberToDatabaseMember } 
 import { ResponsiveMembersTable } from "@/components/members/responsive-members-table";
 import { MemberCard } from "@/components/members/member-card";
 import { MembersListSkeleton } from "@/components/members/members-consolidated-skeletons";
+import { FinancePagination } from "@/components/finance/common/finance-pagination";
 import { getMemberById } from "@/services/member-service";
 import { useQueryClient } from "@tanstack/react-query";
 
@@ -52,7 +53,7 @@ interface ResponsiveMembersListProps {
   setIsAddMemberOpen?: (value: boolean) => void;
 }
 
-export function ResponsiveMembersList({
+export const ResponsiveMembersList = memo(function ResponsiveMembersList({
   searchQuery,
   statusFilter,
   refreshTrigger = 0,
@@ -146,6 +147,11 @@ export function ResponsiveMembersList({
   const handleDeleteMember = useCallback((member: UIMember) => {
     setSelectedMember(member);
     setIsDeleteOpen(true);
+  }, []);
+
+  // Memoized page change handler
+  const handlePageChange = useCallback((page: number) => {
+    setCurrentPage(page);
   }, []);
 
   const handleMemberUpdate = useCallback(async (updatedMember: UIMember) => {
@@ -274,18 +280,50 @@ export function ResponsiveMembersList({
 
   const handleMemberDelete = useCallback(async (id: string) => {
     try {
-      // Delete the member using the mutation
-      const result = await deleteMember.mutateAsync(id);
-
-      if (result.error) {
-        toast.error("Failed to delete member");
+      // Validate the member ID
+      if (!id) {
+        toast.error("Invalid member ID");
         return;
       }
 
+      // Delete the member using the mutation
+      const result = await deleteMember.mutateAsync(id);
+
+      if (result?.error) {
+        console.error("Error deleting member:", result.error);
+
+        // Provide more specific error messages
+        const errorMessage = result.error.message || "Failed to delete member";
+        if (errorMessage.includes("Invalid member ID")) {
+          toast.error("Invalid member ID. Please refresh and try again.");
+        } else if (errorMessage.includes("not found") || errorMessage.includes("does not exist")) {
+          toast.error("Member not found. It may have already been deleted.");
+        } else {
+          toast.error(`Failed to delete member: ${errorMessage}`);
+        }
+        return;
+      }
+
+      // Clear the selected member to close any open dialogs
       setSelectedMember(null);
-      toast.success("Member deleted successfully");
+
+      // Note: Success toast is handled by the DeleteMemberDialog component
+      // to avoid duplicate messages
     } catch (error) {
-      toast.error("An unexpected error occurred");
+      console.error("Unexpected error deleting member:", error);
+
+      // Provide more helpful error messages
+      if (error instanceof Error) {
+        if (error.message.includes("network") || error.message.includes("fetch")) {
+          toast.error("Network error. Please check your connection and try again.");
+        } else if (error.message.includes("timeout")) {
+          toast.error("Request timed out. Please try again.");
+        } else {
+          toast.error(`Error: ${error.message}`);
+        }
+      } else {
+        toast.error("An unexpected error occurred while deleting the member");
+      }
     }
   }, [deleteMember]);
 
@@ -406,7 +444,7 @@ export function ResponsiveMembersList({
           totalCount={totalCount}
           currentPage={currentPage}
           itemsPerPage={itemsPerPage}
-          onPageChange={setCurrentPage}
+          onPageChange={handlePageChange}
           onViewMember={handleViewMember}
           onDeleteMember={handleDeleteMember}
         />
@@ -447,15 +485,13 @@ export function ResponsiveMembersList({
 
       {totalCount > 0 && (
         <div className="mt-4">
-          <ResponsiveMembersTable
-            members={[]}
-            isLoading={false}
-            totalCount={totalCount}
+          <FinancePagination
             currentPage={currentPage}
-            itemsPerPage={itemsPerPage}
-            onPageChange={setCurrentPage}
-            onViewMember={handleViewMember}
-            onDeleteMember={handleDeleteMember}
+            totalPages={Math.ceil(totalCount / itemsPerPage)}
+            totalItems={totalCount}
+            pageSize={itemsPerPage}
+            onPageChange={handlePageChange}
+            showPageNumbers={true}
           />
         </div>
       )}
@@ -478,4 +514,4 @@ export function ResponsiveMembersList({
       )}
     </div>
   );
-}
+});

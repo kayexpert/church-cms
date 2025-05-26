@@ -37,7 +37,7 @@ function ExpenditureManagementContent() {
   const selectedLiabilityId = searchParams.get("liability");
 
   // Fetch required data with React Query
-  const { data: expenditureCategories = [], isLoading: isCategoriesLoading } = useExpenditureCategories(false); // false = exclude system categories
+  const { data: expenditureCategories = [], isLoading: isCategoriesLoading } = useExpenditureCategories(true); // true = include system categories for liability payments
   const { data: liabilityCategories = [], isLoading: isLiabilityCategoriesLoading } = useLiabilityCategories();
   const { data: accounts = [], isLoading: isAccountsLoading } = useAccounts({
     refreshInterval: 15000, // Refresh every 15 seconds

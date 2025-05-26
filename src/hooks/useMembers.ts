@@ -172,8 +172,24 @@ export function useMemberMutations() {
 
     // Selective invalidation based on mutation type
     if (type === 'add') {
-      // For add, we need to invalidate list queries but can be selective about others
-      queryClient.invalidateQueries({ queryKey: memberKeys.list });
+      // For add, we need to invalidate all member list queries
+      // Use predicate to match all member list queries regardless of filters
+      queryClient.invalidateQueries({
+        predicate: (query) => {
+          const queryKey = query.queryKey;
+          return Array.isArray(queryKey) &&
+                 queryKey.length >= 2 &&
+                 queryKey[0] === 'members' &&
+                 queryKey[1] === 'list';
+        }
+      });
+
+      // Invalidate active members query used in finance forms
+      queryClient.invalidateQueries({ queryKey: ["activeMembers"] });
+
+      // Invalidate stats and distributions
+      queryClient.invalidateQueries({ queryKey: memberKeys.stats });
+      queryClient.invalidateQueries({ queryKey: memberKeys.dashboard.stats });
 
       // Only invalidate these if they're already in the cache to avoid unnecessary fetches
       if (queryClient.getQueryData(memberKeys.distribution.gender)) {
@@ -187,37 +203,76 @@ export function useMemberMutations() {
       if (queryClient.getQueryData(memberKeys.growth)) {
         queryClient.invalidateQueries({ queryKey: memberKeys.growth });
       }
-    }
-    else if (type === 'update' && id) {
-      // For update, we can be very selective
-      queryClient.invalidateQueries({ queryKey: memberKeys.detail(id) });
 
-      // Only invalidate list queries if they're in the cache
-      queryClient.invalidateQueries({
-        queryKey: memberKeys.list,
-        // Only refetch active queries to avoid unnecessary network requests
-        refetchActive: true
-      });
+      if (queryClient.getQueryData(memberKeys.dashboard.distribution.gender)) {
+        queryClient.invalidateQueries({ queryKey: memberKeys.dashboard.distribution.gender });
+      }
 
-      // Only invalidate if the data might have changed (e.g., status change)
-      const member = queryClient.getQueryData(memberKeys.detail(id));
-      if (member && (member.status || member.gender)) {
-        queryClient.invalidateQueries({ queryKey: memberKeys.distribution.status });
-        queryClient.invalidateQueries({ queryKey: memberKeys.distribution.gender });
+      if (queryClient.getQueryData(memberKeys.dashboard.distribution.status)) {
+        queryClient.invalidateQueries({ queryKey: memberKeys.dashboard.distribution.status });
       }
     }
+    else if (type === 'update' && id) {
+      // For update, we need to invalidate all member list queries to ensure consistency
+      queryClient.invalidateQueries({
+        predicate: (query) => {
+          const queryKey = query.queryKey;
+          return Array.isArray(queryKey) &&
+                 queryKey.length >= 2 &&
+                 queryKey[0] === 'members' &&
+                 queryKey[1] === 'list';
+        }
+      });
+
+      // Invalidate active members query used in finance forms (in case name or status changed)
+      queryClient.invalidateQueries({ queryKey: ["activeMembers"] });
+
+      // Invalidate the specific member detail
+      queryClient.invalidateQueries({ queryKey: memberKeys.detail(id) });
+
+      // Always invalidate distributions and stats as member updates can affect these
+      queryClient.invalidateQueries({ queryKey: memberKeys.distribution.status });
+      queryClient.invalidateQueries({ queryKey: memberKeys.distribution.gender });
+      queryClient.invalidateQueries({ queryKey: memberKeys.dashboard.distribution.status });
+      queryClient.invalidateQueries({ queryKey: memberKeys.dashboard.distribution.gender });
+      queryClient.invalidateQueries({ queryKey: memberKeys.dashboard.stats });
+    }
     else if (type === 'delete' && id) {
-      // For delete, we need to be thorough but still selective
-      queryClient.invalidateQueries({ queryKey: memberKeys.list });
+      // For delete, we need to be thorough and invalidate all member list queries
+      // Use predicate to match all member list queries regardless of filters
+      queryClient.invalidateQueries({
+        predicate: (query) => {
+          const queryKey = query.queryKey;
+          return Array.isArray(queryKey) &&
+                 queryKey.length >= 2 &&
+                 queryKey[0] === 'members' &&
+                 queryKey[1] === 'list';
+        }
+      });
+
+      // Invalidate active members query used in finance forms
+      queryClient.invalidateQueries({ queryKey: ["activeMembers"] });
+
+      // Invalidate the specific member detail
       queryClient.invalidateQueries({ queryKey: memberKeys.detail(id) });
 
       // These are important to refresh after a delete
       queryClient.invalidateQueries({ queryKey: memberKeys.distribution.status });
       queryClient.invalidateQueries({ queryKey: memberKeys.distribution.gender });
+      queryClient.invalidateQueries({ queryKey: memberKeys.stats });
+
+      // Invalidate dashboard-related queries
+      queryClient.invalidateQueries({ queryKey: memberKeys.dashboard.stats });
+      queryClient.invalidateQueries({ queryKey: memberKeys.dashboard.distribution.status });
+      queryClient.invalidateQueries({ queryKey: memberKeys.dashboard.distribution.gender });
 
       // Only invalidate if they're in the cache
       if (queryClient.getQueryData(memberKeys.growth)) {
         queryClient.invalidateQueries({ queryKey: memberKeys.growth });
+      }
+
+      if (queryClient.getQueryData(memberKeys.dashboard.growth)) {
+        queryClient.invalidateQueries({ queryKey: memberKeys.dashboard.growth });
       }
     }
 
@@ -251,8 +306,20 @@ export function useMemberMutations() {
 
   const deleteMemberMutation = useMutation({
     mutationFn: (id: string) => deleteMember(id),
-    onSuccess: (_, id) => {
+    onSuccess: async (_, id) => {
+      // Invalidate queries first
       invalidateQueries('delete', id);
+
+      // Force an immediate refetch of all member list queries to ensure UI updates
+      await queryClient.refetchQueries({
+        predicate: (query) => {
+          const queryKey = query.queryKey;
+          return Array.isArray(queryKey) &&
+                 queryKey.length >= 2 &&
+                 queryKey[0] === 'members' &&
+                 queryKey[1] === 'list';
+        }
+      });
     },
   });
 

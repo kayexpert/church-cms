@@ -32,8 +32,15 @@ export async function GET() {
         -- Get the asset name
         SELECT name INTO v_asset_name FROM assets WHERE id = p_asset_id;
 
-        -- Get a default income category
-        SELECT id INTO v_category_id FROM income_categories LIMIT 1;
+        -- Get or create the Asset Disposal income category
+        SELECT id INTO v_category_id FROM income_categories WHERE name = 'Asset Disposal';
+
+        -- If Asset Disposal category doesn't exist, create it
+        IF v_category_id IS NULL THEN
+          INSERT INTO income_categories (name, description, created_at, updated_at)
+          VALUES ('Asset Disposal', 'System category for income from asset disposals - auto-created', NOW(), NOW())
+          RETURNING id INTO v_category_id;
+        END IF;
 
         -- Create an income entry for the disposal
         INSERT INTO income_entries (

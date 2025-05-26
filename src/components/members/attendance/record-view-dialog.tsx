@@ -109,8 +109,8 @@ export function RecordViewDialog({
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 py-4">
           <Card className="bg-gradient-to-br from-blue-500/10 to-background border">
-            <CardContent className="p-4 flex items-center">
-              <div className="mr-4 bg-blue-500/20 p-3 rounded-full">
+            <CardContent className="p-4 flex flex-col items-center text-center">
+              <div className="mb-3 bg-blue-500/20 p-3 rounded-full">
                 <CalendarIcon className="h-5 w-5 text-blue-500" />
               </div>
               <div>
@@ -121,8 +121,8 @@ export function RecordViewDialog({
           </Card>
 
           <Card className="bg-gradient-to-br from-green-500/10 to-background border">
-            <CardContent className="p-4 flex items-center">
-              <div className="mr-4 bg-green-500/20 p-3 rounded-full">
+            <CardContent className="p-4 flex flex-col items-center text-center">
+              <div className="mb-3 bg-green-500/20 p-3 rounded-full">
                 <Check className="h-5 w-5 text-green-500" />
               </div>
               <div>
@@ -137,8 +137,8 @@ export function RecordViewDialog({
           </Card>
 
           <Card className="bg-gradient-to-br from-red-500/10 to-background border">
-            <CardContent className="p-4 flex items-center">
-              <div className="mr-4 bg-red-500/20 p-3 rounded-full">
+            <CardContent className="p-4 flex flex-col items-center text-center">
+              <div className="mb-3 bg-red-500/20 p-3 rounded-full">
                 <X className="h-5 w-5 text-red-500" />
               </div>
               <div>

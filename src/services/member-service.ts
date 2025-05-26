@@ -186,37 +186,64 @@ export async function updateMember(id: string, member: Partial<Member>): Promise
  */
 export async function deleteMember(id: string): Promise<ServiceResponse<null>> {
   try {
-    // First, get the member to retrieve the profile image URL
-    const { data: member, error: fetchError } = await supabase
-      .from('members')
-      .select('profile_image')
-      .eq('id', id)
-      .single();
-
-    if (fetchError) {
-      console.error(`Error fetching member ${id} for deletion:`, fetchError);
-      // Continue with deletion even if we can't fetch the member
-    } else if (member?.profile_image) {
-      // If the member has a profile image, delete it from storage
-      try {
-        const { deleteStorageFile } = await import('./storage-delete-service');
-        await deleteStorageFile(member.profile_image);
-        console.log(`Deleted profile image for member ${id}: ${member.profile_image}`);
-      } catch (imageError) {
-        console.error(`Error deleting profile image for member ${id}:`, imageError);
-        // Continue with member deletion even if image deletion fails
-      }
+    // Validate input
+    if (!id || typeof id !== 'string') {
+      return {
+        data: null,
+        error: new Error('Invalid member ID provided')
+      };
     }
 
-    // Delete the member from the database
-    const { error } = await supabase
+    // First, try to get the member to retrieve the profile image URL
+    // This is optional - if it fails, we'll still proceed with deletion
+    let profileImageUrl: string | null = null;
+
+    try {
+      const { data: member, error: fetchError } = await supabase
+        .from('members')
+        .select('profile_image')
+        .eq('id', id)
+        .single();
+
+      if (fetchError) {
+        // Log the error but don't fail the deletion
+        console.warn(`Could not fetch member ${id} profile image before deletion:`, fetchError);
+      } else if (member?.profile_image) {
+        profileImageUrl = member.profile_image;
+      }
+    } catch (fetchError) {
+      console.warn(`Exception while fetching member ${id} for deletion:`, fetchError);
+      // Continue with deletion even if fetch fails
+    }
+
+    // Delete the member from the database first
+    const { error: deleteError } = await supabase
       .from('members')
       .delete()
       .eq('id', id);
 
-    return { data: null, error };
+    if (deleteError) {
+      console.error(`Error deleting member ${id} from database:`, deleteError);
+      return { data: null, error: deleteError };
+    }
+
+    // If deletion was successful and we have a profile image, try to delete it
+    if (profileImageUrl) {
+      try {
+        const { deleteStorageFile } = await import('./storage-delete-service');
+        await deleteStorageFile(profileImageUrl);
+        console.log(`Successfully deleted profile image for member ${id}: ${profileImageUrl}`);
+      } catch (imageError) {
+        console.warn(`Could not delete profile image for member ${id}:`, imageError);
+        // Don't fail the operation if image deletion fails
+        // The member has already been deleted from the database
+      }
+    }
+
+    console.log(`Successfully deleted member ${id}`);
+    return { data: null, error: null };
   } catch (error) {
-    console.error('Error deleting member:', error);
+    console.error(`Unexpected error deleting member ${id}:`, error);
     return { data: null, error: error as Error };
   }
 }

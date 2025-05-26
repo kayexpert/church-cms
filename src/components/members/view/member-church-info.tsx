@@ -79,19 +79,21 @@ export function MemberChurchInfo({
           <div className="flex flex-col">
             <p className="text-sm text-muted-foreground">Departments</p>
             {isEditing ? (
-              <div className="mt-1">
+              <div className="mt-1 w-full">
                 {isLoading.departments ? (
                   <div className="flex items-center justify-center h-9 border rounded-md bg-muted/30">
                     <div className="animate-spin h-4 w-4 border-2 border-primary rounded-full border-t-transparent"></div>
                     <span className="ml-2 text-sm text-muted-foreground">Loading departments...</span>
                   </div>
                 ) : (
-                  <MultiSelect
-                    options={departmentsList}
-                    selected={member.departments || []}
-                    onChange={onDepartmentsChange}
-                    placeholder="Select departments"
-                  />
+                  <div className="w-full">
+                    <MultiSelect
+                      options={departmentsList}
+                      selected={member.departments || []}
+                      onChange={onDepartmentsChange}
+                      placeholder="Select departments"
+                    />
+                  </div>
                 )}
               </div>
             ) : (
@@ -175,19 +177,21 @@ export function MemberChurchInfo({
           <div className="flex flex-col">
             <p className="text-sm text-muted-foreground">Certificates</p>
             {isEditing ? (
-              <div className="mt-1">
+              <div className="mt-1 w-full">
                 {isLoading.certificates ? (
                   <div className="flex items-center justify-center h-9 border rounded-md bg-muted/30">
                     <div className="animate-spin h-4 w-4 border-2 border-primary rounded-full border-t-transparent"></div>
                     <span className="ml-2 text-sm text-muted-foreground">Loading certificates...</span>
                   </div>
                 ) : (
-                  <MultiSelect
-                    options={certificatesList}
-                    selected={member.certificates || []}
-                    onChange={onCertificatesChange}
-                    placeholder="Select certificates"
-                  />
+                  <div className="w-full">
+                    <MultiSelect
+                      options={certificatesList}
+                      selected={member.certificates || []}
+                      onChange={onCertificatesChange}
+                      placeholder="Select certificates"
+                    />
+                  </div>
                 )}
               </div>
             ) : (

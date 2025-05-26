@@ -5,6 +5,7 @@ import { supabase } from "@/lib/supabase";
 import { AssetDisposal, ExtendedAssetDisposal } from "@/types/assets";
 import { toast } from "sonner";
 import { format } from "date-fns";
+import { ensureAssetDisposalCategory } from "@/lib/ensure-asset-disposal-category";
 
 // Query keys for asset disposals
 const ASSET_DISPOSALS_KEY = ["asset-disposals"];
@@ -163,29 +164,8 @@ export function useAssetDisposalMutations() {
 
           if (assetError) throw new Error(`Failed to fetch asset: ${assetError.message}`);
 
-          // 2. Get a default income category
-          const { data: categoryData, error: categoryError } = await supabase
-            .from("income_categories")
-            .select("id")
-            .or("name.ilike.%disposal%,name.ilike.%asset%")
-            .limit(1);
-
-          if (categoryError) throw new Error(`Failed to fetch categories: ${categoryError.message}`);
-
-          let categoryId = categoryData?.[0]?.id;
-
-          // If no specific category found, get the first income category
-          if (!categoryId) {
-            const { data: fallbackCategory, error: fallbackError } = await supabase
-              .from("income_categories")
-              .select("id")
-              .limit(1);
-
-            if (fallbackError) throw new Error(`Failed to fetch fallback category: ${fallbackError.message}`);
-            categoryId = fallbackCategory?.[0]?.id;
-          }
-
-          if (!categoryId) throw new Error("No income category found");
+          // 2. Ensure Asset Disposal category exists and get its ID
+          const categoryId = await ensureAssetDisposalCategory();
 
           // 3. Create an income entry
           const { data: incomeData, error: incomeError } = await supabase

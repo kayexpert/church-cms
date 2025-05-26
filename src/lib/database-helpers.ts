@@ -545,6 +545,10 @@ async function setupTablesWithDirectSQL() {
       INSERT INTO income_categories (name, description)
       SELECT 'Donations', 'Specific donations for church activities'
       WHERE NOT EXISTS (SELECT 1 FROM income_categories WHERE name = 'Donations');
+
+      INSERT INTO income_categories (name, description)
+      SELECT 'Asset Disposal', 'System category for income from asset disposals - auto-created'
+      WHERE NOT EXISTS (SELECT 1 FROM income_categories WHERE name = 'Asset Disposal');
     `;
 
     const createExpenditureEntriesSQL = `
@@ -781,7 +785,8 @@ async function setupTablesWithDirectSQL() {
         await supabase.from('income_categories').insert([
           { name: 'Tithes', description: 'Regular tithes from members' },
           { name: 'Offerings', description: 'General offerings' },
-          { name: 'Donations', description: 'Specific donations for church activities' }
+          { name: 'Donations', description: 'Specific donations for church activities' },
+          { name: 'Asset Disposal', description: 'System category for income from asset disposals - auto-created' }
         ]);
 
         // Create expenditure categories

@@ -109,7 +109,7 @@ export function LiabilityPaymentDialog({
       if (paymentAmount > remainingAmount) {
         form.setError("amount", {
           type: "manual",
-          message: `Payment amount cannot exceed the remaining amount (${remainingAmount})`,
+          message: `Payment amount cannot exceed the remaining amount (${formatCurrency(remainingAmount)})`,
         });
         setIsSubmitting(false);
         return;

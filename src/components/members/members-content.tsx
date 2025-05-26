@@ -1,29 +1,15 @@
 "use client";
 
-import { useState, Suspense, useEffect, useCallback } from "react";
+import { useState, Suspense, useEffect, useCallback, memo } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
 import {
-  Search,
-  Filter,
-  UserPlus,
   Users,
   Calendar,
   Cake,
-  UserCircle2,
-  Loader2
+  UserCircle2
 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useQueryClient } from "@tanstack/react-query";
 import { memberKeys } from "@/providers/query-config";
 import { getMembers } from "@/services/member-service";
@@ -39,14 +25,6 @@ import { MembersListPage } from "@/components/members/members-list-page";
 
 // Dynamically import components for code splitting
 // Optimized with proper loading states and consistent patterns
-const ResponsiveMembersList = dynamic(
-  () => import("@/components/members/responsive-members-list").then(mod => ({ default: mod.ResponsiveMembersList })),
-  {
-    // Remove loading state to prevent duplicate skeletons
-    // The skeleton is now handled by the Suspense fallback only
-    ssr: false // Disable server-side rendering for better performance
-  }
-);
 
 // Consistent pattern for all dynamic imports
 // Remove loading states to prevent duplicate skeletons
@@ -83,7 +61,7 @@ interface MembersContentProps {
   } | null;
 }
 
-export function MembersContent({
+export const MembersContent = memo(function MembersContent({
   initialMembers = [],
   initialCount = 0,
   initialStats = null
@@ -190,17 +168,14 @@ export function MembersContent({
         </TabsContent>
 
         <TabsContent value="members" className="space-y-6">
-          {/* Wrap the MembersListPage in a Suspense boundary */}
-          <Suspense key="members-page-suspense" fallback={<MembersListSkeleton includeHeader={true} />}>
-            <MembersListPage
-              searchQuery={searchQuery}
-              setSearchQuery={setSearchQuery}
-              statusFilter={statusFilter}
-              setStatusFilter={setStatusFilter}
-              refreshTrigger={refreshTrigger}
-              setIsAddMemberOpen={setIsAddMemberOpen}
-            />
-          </Suspense>
+          <MembersListPage
+            searchQuery={searchQuery}
+            setSearchQuery={setSearchQuery}
+            statusFilter={statusFilter}
+            setStatusFilter={setStatusFilter}
+            refreshTrigger={refreshTrigger}
+            setIsAddMemberOpen={setIsAddMemberOpen}
+          />
         </TabsContent>
 
         <TabsContent value="attendance" className="space-y-6">
@@ -223,4 +198,4 @@ export function MembersContent({
       />
     </div>
   );
-}
+});

@@ -154,20 +154,19 @@ export function EnhancedExpenditureForm({
   useEffect(() => {
     setIsLiabilityPayment(watchLiabilityPayment);
 
-    // If liability payment is checked and no category is selected, auto-select a default category
+    // If liability payment is checked, auto-select the "Liability Payment" system category
     if (watchLiabilityPayment && !form.getValues("category_id")) {
-      // Find a suitable default category
-      const defaultCategory = expenditureCategories.find(cat =>
-        cat.name.toLowerCase().includes('bill') ||
-        cat.name.toLowerCase().includes('debt') ||
-        cat.name.toLowerCase().includes('loan')
+      // Look for the specific "Liability Payment" system category
+      const liabilityPaymentCategory = expenditureCategories.find(cat =>
+        cat.name === 'Liability Payment'
       );
 
-      if (defaultCategory) {
-        form.setValue("category_id", defaultCategory.id);
-      } else if (expenditureCategories.length > 0) {
-        // If no suitable category found, use the first available category
-        form.setValue("category_id", expenditureCategories[0].id);
+      if (liabilityPaymentCategory) {
+        form.setValue("category_id", liabilityPaymentCategory.id);
+      } else {
+        // If "Liability Payment" category doesn't exist, we'll create it during submission
+        // For now, don't set any category - it will be handled in the submission logic
+        console.log('Liability Payment category not found, will be created during submission');
       }
     }
   }, [watchLiabilityPayment, form, expenditureCategories]);
@@ -183,15 +182,13 @@ export function EnhancedExpenditureForm({
       if (selectedLiability) {
         // Set form values if they're not already set
         if (!watchLiabilityId) {
-          // Set default category for liability payments
-          const defaultCategory = expenditureCategories.find(cat =>
-            cat.name.toLowerCase().includes('bill') ||
-            cat.name.toLowerCase().includes('debt') ||
-            cat.name.toLowerCase().includes('loan')
+          // Set the "Liability Payment" system category for liability payments
+          const liabilityPaymentCategory = expenditureCategories.find(cat =>
+            cat.name === 'Liability Payment'
           );
 
-          if (defaultCategory) {
-            form.setValue("category_id", defaultCategory.id);
+          if (liabilityPaymentCategory) {
+            form.setValue("category_id", liabilityPaymentCategory.id);
           }
 
           // Set form values for liability payment
@@ -234,15 +231,13 @@ export function EnhancedExpenditureForm({
           }
 
           if (data) {
-            // Set default category
-            const defaultCategory = expenditureCategories.find(cat =>
-              cat.name.toLowerCase().includes('bill') ||
-              cat.name.toLowerCase().includes('debt') ||
-              cat.name.toLowerCase().includes('loan')
+            // Set the "Liability Payment" system category
+            const liabilityPaymentCategory = expenditureCategories.find(cat =>
+              cat.name === 'Liability Payment'
             );
 
-            if (defaultCategory) {
-              form.setValue("category_id", defaultCategory.id);
+            if (liabilityPaymentCategory) {
+              form.setValue("category_id", liabilityPaymentCategory.id);
             }
 
             // Set form values
@@ -307,15 +302,13 @@ export function EnhancedExpenditureForm({
                     category: null // No category info in simple query
                   };
 
-                  // Set default category for liability payments
-                  const defaultCategory = expenditureCategories.find(cat =>
-                    cat.name.toLowerCase().includes('bill') ||
-                    cat.name.toLowerCase().includes('debt') ||
-                    cat.name.toLowerCase().includes('loan')
+                  // Set the "Liability Payment" system category for liability payments
+                  const liabilityPaymentCategory = expenditureCategories.find(cat =>
+                    cat.name === 'Liability Payment'
                   );
 
-                  if (defaultCategory) {
-                    form.setValue("category_id", defaultCategory.id);
+                  if (liabilityPaymentCategory) {
+                    form.setValue("category_id", liabilityPaymentCategory.id);
                   }
 
                   // Set form values for liability payment
@@ -353,15 +346,13 @@ export function EnhancedExpenditureForm({
                 category: null // No category info since we can't join
               };
 
-              // Set default category for liability payments
-              const defaultCategory = expenditureCategories.find(cat =>
-                cat.name.toLowerCase().includes('bill') ||
-                cat.name.toLowerCase().includes('debt') ||
-                cat.name.toLowerCase().includes('loan')
+              // Set the "Liability Payment" system category for liability payments
+              const liabilityPaymentCategory = expenditureCategories.find(cat =>
+                cat.name === 'Liability Payment'
               );
 
-              if (defaultCategory) {
-                form.setValue("category_id", defaultCategory.id);
+              if (liabilityPaymentCategory) {
+                form.setValue("category_id", liabilityPaymentCategory.id);
               }
 
               // Set form values for liability payment
@@ -396,15 +387,13 @@ export function EnhancedExpenditureForm({
         );
 
         if (selectedLiability) {
-          // Set default category for liability payments
-          const defaultCategory = expenditureCategories.find(cat =>
-            cat.name.toLowerCase().includes('bill') ||
-            cat.name.toLowerCase().includes('debt') ||
-            cat.name.toLowerCase().includes('loan')
+          // Set the "Liability Payment" system category for liability payments
+          const liabilityPaymentCategory = expenditureCategories.find(cat =>
+            cat.name === 'Liability Payment'
           );
 
-          if (defaultCategory) {
-            form.setValue("category_id", defaultCategory.id);
+          if (liabilityPaymentCategory) {
+            form.setValue("category_id", liabilityPaymentCategory.id);
           }
 
           // Set form values for liability payment
@@ -455,15 +444,13 @@ export function EnhancedExpenditureForm({
                       category: null // No category info in simple query
                     };
 
-                    // Set default category for liability payments
-                    const defaultCategory = expenditureCategories.find(cat =>
-                      cat.name.toLowerCase().includes('bill') ||
-                      cat.name.toLowerCase().includes('debt') ||
-                      cat.name.toLowerCase().includes('loan')
+                    // Set the "Liability Payment" system category for liability payments
+                    const liabilityPaymentCategory = expenditureCategories.find(cat =>
+                      cat.name === 'Liability Payment'
                     );
 
-                    if (defaultCategory) {
-                      form.setValue("category_id", defaultCategory.id);
+                    if (liabilityPaymentCategory) {
+                      form.setValue("category_id", liabilityPaymentCategory.id);
                     }
 
                     // Set form values for liability payment
@@ -501,15 +488,13 @@ export function EnhancedExpenditureForm({
                   category: null // No category info since we can't join
                 };
 
-                // Set default category for liability payments
-                const defaultCategory = expenditureCategories.find(cat =>
-                  cat.name.toLowerCase().includes('bill') ||
-                  cat.name.toLowerCase().includes('debt') ||
-                  cat.name.toLowerCase().includes('loan')
+                // Set the "Liability Payment" system category for liability payments
+                const liabilityPaymentCategory = expenditureCategories.find(cat =>
+                  cat.name === 'Liability Payment'
                 );
 
-                if (defaultCategory) {
-                  form.setValue("category_id", defaultCategory.id);
+                if (liabilityPaymentCategory) {
+                  form.setValue("category_id", liabilityPaymentCategory.id);
                 }
 
                 // Set form values for liability payment
@@ -577,10 +562,19 @@ export function EnhancedExpenditureForm({
   const expenditureMutation = useMutation({
     mutationFn: async (values: ExpenditureFormValues) => {
       try {
+        // For liability payments, ensure we have the correct category
+        let categoryId = values.category_id;
+
+        if (values.liability_payment && !categoryId) {
+          // Use the utility function to ensure the "Liability Payment" category exists
+          const { ensureLiabilityPaymentCategory } = await import('@/lib/ensure-budget-allocation-category');
+          categoryId = await ensureLiabilityPaymentCategory();
+        }
+
         // Format the data for the database
         const expenditureData = {
           date: format(values.date, "yyyy-MM-dd"),
-          category_id: values.category_id,
+          category_id: categoryId,
           department_id: values.department_id || null,
           description: values.description,
           amount: parseFloat(values.amount), // Amount is numeric in the database
@@ -601,6 +595,19 @@ export function EnhancedExpenditureForm({
 
           if (selectedLiability) {
             const paymentAmount = parseFloat(values.amount);
+
+            // Double-check validation inside mutation as safety net
+            const amountRemaining = typeof selectedLiability.amount_remaining === 'string'
+              ? parseFloat(selectedLiability.amount_remaining)
+              : typeof selectedLiability.amount_remaining === 'number'
+                ? selectedLiability.amount_remaining
+                : 0;
+
+            // Prevent overpayment at mutation level
+            if (paymentAmount > amountRemaining) {
+              throw new Error(`Payment amount (${formatCurrency(paymentAmount)}) exceeds remaining liability amount (${formatCurrency(amountRemaining)}). Please reduce the payment amount.`);
+            }
+
             const currentAmountPaid = typeof selectedLiability.amount_paid === 'string'
               ? parseFloat(selectedLiability.amount_paid)
               : selectedLiability.amount_paid;
@@ -808,22 +815,20 @@ export function EnhancedExpenditureForm({
   const onSubmit = (values: ExpenditureFormValues) => {
     // Using toast notifications for validation
 
-    // For liability payments, auto-select a default category if none is selected
+    // For liability payments, ensure the "Liability Payment" system category is used
     if (values.liability_payment && !values.category_id) {
-      // Find a suitable default category
-      const defaultCategory = expenditureCategories.find(cat =>
-        cat.name.toLowerCase().includes('bill') ||
-        cat.name.toLowerCase().includes('debt') ||
-        cat.name.toLowerCase().includes('loan')
+      // Look for the specific "Liability Payment" system category
+      const liabilityPaymentCategory = expenditureCategories.find(cat =>
+        cat.name === 'Liability Payment'
       );
 
-      if (defaultCategory) {
-        values.category_id = defaultCategory.id;
-        form.setValue("category_id", defaultCategory.id);
-      } else if (expenditureCategories.length > 0) {
-        // If no suitable category found, use the first available category
-        values.category_id = expenditureCategories[0].id;
-        form.setValue("category_id", expenditureCategories[0].id);
+      if (liabilityPaymentCategory) {
+        values.category_id = liabilityPaymentCategory.id;
+        form.setValue("category_id", liabilityPaymentCategory.id);
+      } else {
+        // If "Liability Payment" category doesn't exist, we'll create it in the mutation
+        // For now, we'll let the mutation handle this case
+        console.log('Liability Payment category not found, will be created during mutation');
       }
     }
 
@@ -897,8 +902,8 @@ export function EnhancedExpenditureForm({
 
         // Check if payment amount exceeds remaining amount
         if (paymentAmount > amountRemaining) {
-          toast.warning(`Payment amount (${paymentAmount.toFixed(2)}) exceeds remaining liability amount (${amountRemaining.toFixed(2)})`);
-          // Continue with submission despite warning
+          toast.error(`Payment amount (${formatCurrency(paymentAmount)}) exceeds remaining liability amount (${formatCurrency(amountRemaining)}). Please reduce the payment amount.`);
+          return; // Prevent form submission
         }
       }
     }
@@ -1297,24 +1302,20 @@ export function EnhancedExpenditureForm({
                       onCheckedChange={(checked) => {
                         field.onChange(checked);
 
-                        // If checked and no category is selected, auto-select a default category
+                        // If checked and no category is selected, auto-select the "Liability Payment" system category
                         if (checked && !form.getValues("category_id")) {
-                          console.log("Liability payment checked via checkbox, auto-selecting category");
+                          console.log("Liability payment checked via checkbox, auto-selecting Liability Payment category");
 
-                          // Find a suitable default category
-                          const defaultCategory = expenditureCategories.find(cat =>
-                            cat.name.toLowerCase().includes('bill') ||
-                            cat.name.toLowerCase().includes('debt') ||
-                            cat.name.toLowerCase().includes('loan')
+                          // Find the "Liability Payment" system category
+                          const liabilityPaymentCategory = expenditureCategories.find(cat =>
+                            cat.name === 'Liability Payment'
                           );
 
-                          if (defaultCategory) {
-                            console.log("Found default category:", defaultCategory.name);
-                            form.setValue("category_id", defaultCategory.id);
-                          } else if (expenditureCategories.length > 0) {
-                            // If no suitable category found, use the first available category
-                            console.log("Using first available category");
-                            form.setValue("category_id", expenditureCategories[0].id);
+                          if (liabilityPaymentCategory) {
+                            console.log("Found Liability Payment category:", liabilityPaymentCategory.name);
+                            form.setValue("category_id", liabilityPaymentCategory.id);
+                          } else {
+                            console.log("Liability Payment category not found, will be created during submission");
                           }
                         }
                       }}

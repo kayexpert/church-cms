@@ -14,8 +14,8 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
-// Import the deleteMember function from the member service
-import { deleteMember } from "@/services/member-service";
+// Import the useMemberMutations hook for automatic query invalidation
+import { useMemberMutations } from "@/hooks/useMembers";
 
 interface Member {
   id: string;
@@ -36,15 +36,33 @@ interface DeleteMemberDialogProps {
 export function DeleteMemberDialog({ member, open, onOpenChange, onMemberDelete }: DeleteMemberDialogProps) {
   const [isLoading, setIsLoading] = useState(false);
 
+  // Get the delete mutation from the hook for automatic query invalidation
+  const { deleteMember: deleteMemberMutation } = useMemberMutations();
+
   const handleDelete = async () => {
     setIsLoading(true);
     try {
-      // Call the delete member service
-      const response = await deleteMember(member.id);
+      // Validate member data
+      if (!member?.id) {
+        toast.error("Invalid member data. Please refresh and try again.");
+        return;
+      }
 
-      if (response.error) {
-        console.error("Error deleting member:", response.error);
-        toast.error("Failed to delete member. Please try again.");
+      // Use the React Query mutation which automatically handles query invalidation
+      const result = await deleteMemberMutation.mutateAsync(member.id);
+
+      if (result?.error) {
+        console.error("Error deleting member:", result.error);
+
+        // Provide more specific error messages based on the error type
+        const errorMessage = result.error.message || "Failed to delete member";
+        if (errorMessage.includes("Invalid member ID")) {
+          toast.error("Invalid member ID. Please refresh the page and try again.");
+        } else if (errorMessage.includes("not found") || errorMessage.includes("does not exist")) {
+          toast.error("Member not found. It may have already been deleted.");
+        } else {
+          toast.error(`Failed to delete member: ${errorMessage}`);
+        }
         return;
       }
 
@@ -53,11 +71,23 @@ export function DeleteMemberDialog({ member, open, onOpenChange, onMemberDelete 
         onMemberDelete(member.id);
       }
 
-      toast.success("Member deleted successfully");
+      toast.success(`${member.firstName} ${member.lastName} has been deleted successfully`);
       onOpenChange(false);
     } catch (error) {
       console.error("Unexpected error deleting member:", error);
-      toast.error("An unexpected error occurred. Please try again.");
+
+      // Provide more helpful error messages
+      if (error instanceof Error) {
+        if (error.message.includes("network") || error.message.includes("fetch")) {
+          toast.error("Network error. Please check your connection and try again.");
+        } else if (error.message.includes("timeout")) {
+          toast.error("Request timed out. Please try again.");
+        } else {
+          toast.error(`Error: ${error.message}`);
+        }
+      } else {
+        toast.error("An unexpected error occurred. Please try again.");
+      }
     } finally {
       setIsLoading(false);
     }

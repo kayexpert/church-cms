@@ -14,13 +14,19 @@ export function isSystemIncomeCategory(category: IncomeCategory): boolean {
     return true;
   }
 
+  // Check for asset disposal categories
+  if (category.name === "Asset Disposal") {
+    return true;
+  }
+
   // Check for system-related descriptions
   if (category.description) {
     const description = category.description.toLowerCase();
     if (
       description.includes("system category") ||
       description.includes("opening balance") ||
-      description.includes("auto-created")
+      description.includes("auto-created") ||
+      description.includes("asset disposal")
     ) {
       return true;
     }

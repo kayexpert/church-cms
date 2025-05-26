@@ -45,6 +45,7 @@ const isSystemCategory = (category: IncomeCategory): boolean => {
   return isSystemIncomeCategory(category) ||
     // Additional checks specific to this component
     category.name === "Opening Balance" ||
+    category.name === "Asset Disposal" ||
     (category.description?.toLowerCase().includes("system category") || false);
 };
 

@@ -9,7 +9,9 @@ const nextConfig: NextConfig = {
       '@radix-ui/react-icons',
       '@tanstack/react-query',
       'recharts',
-      'date-fns'
+      'date-fns',
+      'react-window',
+      '@tanstack/react-virtual'
     ],
     // Disable CSS optimization to fix critters dependency issue
     optimizeCss: false,
